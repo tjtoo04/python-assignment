@@ -21,19 +21,19 @@ class Admin(User):
         User.__init__(ID, Password, Name, Age)
 
     # 2 = admin, 1 = employees, 0 = students
-    def login(ID, Password, admin_lines, student_lines):
-        if ID == admin_lines[0][:-1] and Password == admin_lines[1]:
-            print("Logging in...")
-            return 2
+    def login(admin_lines):
+        while True:
+            username = str(input("Please enter your username: "))
+            password = str(input("Please enter your password: "))
+            if username == admin_lines[0][:-1] and password == admin_lines[1]:
+                print("Logging in...")
+                return 2
 
-        if ID != admin_lines[0][:-1] or Password != admin_lines[1]:
-            print("Incorrect username/password. Try again.")
-            main()
+            if username != admin_lines[0][:-1] or password != admin_lines[1]:
+                print("Incorrect username/password. Try again.")
 
     def register():
         pass
-
-    pass
 
 
 class Receptionist(User):
@@ -58,14 +58,13 @@ class Student(User):
 
 
 def main():
-    login_type = str(input("For admin, type A || For receptionists, press R || For tutors, type T || For students, type S || "))
-    username = str(input("Please enter your username: "))
-    password = str(input("Please enter your password: "))
-    admin_lines = User.line_read()[0]
-    student_lines = User.line_read()[1]
-    current_sesh = Admin.login(username, password, admin_lines, student_lines)
-    if current_sesh == 2:
-        print("Welcome Admin")
+    login_type = str(input("For admin, type A || For receptionists, press R || For tutors, type T || For students, type S || ")).upper()
+    if login_type == "A":
+        admin_lines = User.line_read()[0]
+        current_sesh = Admin.login(admin_lines)
+        if current_sesh == 2:
+            print("Welcome Admin")
+   #student_lines = User.line_read()[1]
 
 
 print("Welcome to Tuition Centre XY")
