@@ -68,14 +68,16 @@ class Student(User):
         while counter < 3:
             username = str(input("Please enter your username: "))
             password = str(input("Please enter your password: "))
-            while userline / 10 < len(student_lines) / 10:
+            data = list(map(str.strip, student_lines))
+            print(data)
+            while userline / 10 < len(data) / 10:
                 if (
-                    username == student_lines[userline][:-1]
-                    and password == student_lines[passline][:-1]
+                    username == data[userline]
+                    and password == data[passline]
                 ):
                     print("Logging in...")
                     status = True
-                    return 0, student_lines[userline:]
+                    return 0, data[userline:]
                 else:
                     userline += 10
                     passline += 10
@@ -116,7 +118,7 @@ def main(editing = True):
         if current_sesh == -1:
             print("Login failed")
         elif current_sesh[0] == 0:
-            print(f"Welcome {current_sesh[1][2][:-1]}.")
+            print(f"Welcome {current_sesh[1][2]}.")
         cursor = str(
             input(
                 "To update your profile, type U || To view your schedule, type V || To send a subject change request, type R || To view payment status, type P ||"
@@ -126,10 +128,10 @@ def main(editing = True):
             if cursor == "U":
                 for i in range(len(user_profile)):
                     print(
-                        f"|| {items[i]}: {user_profile[i][:-1]}"
+                        f"|| {items[i]}: {user_profile[i]}"
                     )
                 print("What would you like to edit?")
-                print(Student.retrieve_info())
+                print(list(map(str.strip, Student.retrieve_info())))
                 editing = False
 
 
