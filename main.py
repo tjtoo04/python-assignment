@@ -70,8 +70,8 @@ class User:
                     return user_info[i : i + 10]
                 except:
                     return user_info[i:]
-            if i > len(user_info):
-                return "User not found"
+            if i+1 >= len(user_info):
+                return -1
 
 
 class Admin(User):
@@ -144,7 +144,7 @@ class Receptionist(User):
                 student.write(data[i])
         student.close()
 
-    def subject_change_requests():
+    def pending_requests():
         pass
 
     # Deletes the desired student's info
@@ -219,7 +219,7 @@ class Student(User):
             Month_of_enrollment,
         )
 
-    def change_request():
+    def subject_change_request():
         pass
 
 
@@ -294,11 +294,15 @@ def main(using=True):
                 confirmation = str(input("Are you sure? (y/n) ==> ")).upper()
                 if confirmation == "Y":
                     wanted_user_data = Student.retrieve_info(wanted_user, 2)
-                    Receptionist.delete_student(wanted_user, wanted_user_data)
-                    print("User deleted!")
-                    using = False
+                    if wanted_user_data == -1:
+                        print("User not found.")
+                        print("Going back...")
+                    else:
+                        Receptionist.delete_student(wanted_user, wanted_user_data)
+                        print("User deleted!")
+                        using = False
                 elif confirmation == "N":
-                    pass
+                    print("Going back...")
 
     # Student code block
     elif login_type == "S":
@@ -320,7 +324,7 @@ def main(using=True):
                 for i in range(len(user_profile)):
                     print(f"|| {items[i]}: {user_profile[i]}")
                 print("What would you like to edit?")
-                print(Student.retrieve_info(username, 2))
+                print(Student.retrieve_info("tttt", 2))
                 using = False
 
 
