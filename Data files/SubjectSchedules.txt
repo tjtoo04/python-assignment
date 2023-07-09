@@ -1,0 +1,9 @@
+Chinese
+Malay
+English
+Maths
+Science
+Physics
+Chemistry
+Biology
+History

@@ -1,3 +1,6 @@
+import time as t
+
+
 class User:
     def __init__(
         self,
@@ -44,6 +47,7 @@ class User:
             while userline / 10 < len(data) / 10:
                 if username == data[userline] and password == data[passline]:
                     print("Logging in...")
+                    t.sleep(1)
                     status = True
                     try:
                         return 0, data[userline : userline + 10], username
@@ -54,6 +58,7 @@ class User:
                     passline += 10
             if status == False:
                 print("Incorrect username or password.")
+                t.sleep(1)
                 counter += 1
                 userline = 0
                 passline = 1
@@ -70,7 +75,7 @@ class User:
                     return user_info[i : i + 10]
                 except:
                     return user_info[i:]
-            if i+1 >= len(user_info):
+            if i + 1 >= len(user_info):
                 return -1
 
 
@@ -98,9 +103,11 @@ class Admin(User):
             password = str(input("Please enter your password ==> "))
             if username == data[0] and password == data[1]:
                 print("Logging in...")
+                t.sleep(1)
                 return 2
             if username != data[0] or password != data[1]:
                 print("Incorrect username/password.")
+                t.sleep(1)
                 counter += 1
             if counter == 3:
                 print("Login attempts reached.")
@@ -223,7 +230,7 @@ class Student(User):
         pass
 
 
-def main(using=True):
+def main(session=True, running = True):
     items = [
         "Username",
         "Password",
@@ -237,96 +244,123 @@ def main(using=True):
         "Month_of_enrollment",
     ]
     subject_list = [
-        "Chinese",
-        "English",
-        "Maths",
-        "Science",
-        "Physics",
-        "Chemistry",
-        "History",
-        "Biology",
+        "CHINESE",
+        'MALAY',
+        "ENGLISH",
+        "MATHS",
+        "SCIENCE",
+        "PYHSICS",
+        "CHEMISTRY",
+        "HISTORY",
+        "BIOLOGY",
     ]
-    login_type = str(
-        input(
-            "For admin, type A || For receptionists, press R || For tutors, type T || For students, type S || ==> "
-        )
-    ).upper()
+    while running:
+        login_type = str(
+            input(
+                "For admin, type A || For receptionists, press R || For tutors, type T || For students, type S || To exit, type E || ==> "
+            )
+        ).upper()
 
-    # Admin code block
-    if login_type == "A":
-        admin_lines = User.line_read()[0]
-        current_sesh = Admin.login(admin_lines)
-        if current_sesh == 2:
-            print("Welcome Admin")
+        # Admin code block
+        if login_type == "A":
+            admin_lines = User.line_read()[0]
+            current_sesh = Admin.login(admin_lines)
+            if current_sesh == 2:
+                print("Welcome Admin")
+                t.sleep(1)
 
-    # Receptionist code block
-    elif login_type == "R":
-        receptionist_lines = Receptionist.line_read()[1]
-        current_sesh = Receptionist.login(receptionist_lines)
-        user_profile = current_sesh[1]
-        if current_sesh == -1:
-            print("Login failed")
-        elif current_sesh[0] == 0:
-            print(f"Welcome {user_profile[2]}.")
-        while using:
-            cursor = str(
-                input(
-                    "To register a student, type REG || To update subject enrollment of a student, type U || To generate receipts, type REC || To delete a student, type D || To update your profile, type P || ==> "
-                )
-            ).upper()
-            if cursor == "REG":
-                temp = []
-                data = []
-                for i in items:
-                    if i == "Subjects":
-                        print("The subjects available are " + ", ".join(subject_list))
-                        temp.append(str(input("Please enter subject 1 ==>")))
-                        temp.append(str(input("Please enter subject 2 ==>")))
-                        temp.append(str(input("Please enter subject 3 ==>")))
-                        data.append(",".join(temp))
-                    else:
-                        data.append(str(input(f"Please enter your {i}")))
-                Receptionist.register(data)
-            elif cursor == "D":
-                wanted_user = str(
-                    input("Enter username of the profile you would like to delete ==> ")
-                )
-                confirmation = str(input("Are you sure? (y/n) ==> ")).upper()
-                if confirmation == "Y":
-                    wanted_user_data = Student.retrieve_info(wanted_user, 2)
-                    if wanted_user_data == -1:
-                        print("User not found.")
+        # Receptionist code block
+        elif login_type == "R":
+            receptionist_lines = Receptionist.line_read()[1]
+            current_sesh = Receptionist.login(receptionist_lines)
+            user_profile = current_sesh[1]
+            if current_sesh == -1:
+                print("Login failed")
+            elif current_sesh[0] == 0:
+                print(f"Welcome {user_profile[2]}.")
+                t.sleep(1)
+            while session:
+                cursor = str(
+                    input(
+                        "To register a student, type REG || To update subject enrollment of a student, type U || To generate receipts, type REC || To delete a student, type D || To update your profile, type P || To exit, type E || ==> "
+                    )
+                ).upper()
+                if cursor == "REG":
+                    temp = []
+                    data = []
+                    n = 1
+                    for i in items:
+                        if i == "Subjects":
+                            print("The subjects available are " + ", ".join(subject_list))
+                            while n <= 3:
+                                choice = str(input(f"Please enter subject {n} ==> ")).upper()
+                                if choice not in subject_list:
+                                    print("That's not a valid subject")
+                                else:
+                                    temp.append(choice)
+                                    n += 1
+                            data.append(",".join(temp))
+                        else:
+                            data.append(str(input(f"Please enter {i} ==> ")))
+                    Receptionist.register(data)
+                    print("User registered.")
+                    t.sleep(0.5)
+                elif cursor == "D":
+                    wanted_user = str(
+                        input("Enter username of the profile you would like to delete ==> ")
+                    )
+                    confirmation = str(input("Are you sure? (y/n) ==> ")).upper()
+                    if confirmation == "Y":
+                        wanted_user_data = Student.retrieve_info(wanted_user, 2)
+                        if wanted_user_data == -1:
+                            print("User not found.")
+                            t.sleep(1)
+                            print("Going back...")
+                            t.sleep(1)
+                        else:
+                            Receptionist.delete_student(wanted_user, wanted_user_data)
+                            t.sleep(0.5)
+                            print("User deleted!")
+                            t.sleep(0.5)
+                    elif confirmation == "N":
                         print("Going back...")
-                    else:
-                        Receptionist.delete_student(wanted_user, wanted_user_data)
-                        print("User deleted!")
-                        using = False
-                elif confirmation == "N":
-                    print("Going back...")
+                        t.sleep(1)
+                elif cursor == "E":
+                    print("Logging out...")
+                    t.sleep(1)
+                    print("Logout successfull.")
+                    t.sleep(0.5)
+                    session = False
 
-    # Student code block
-    elif login_type == "S":
-        student_lines = Student.line_read()[2]
-        current_sesh = Student.login(student_lines)
-        user_profile = current_sesh[1]
-        username = current_sesh[2]
-        if current_sesh == -1:
-            print("Login failed")
-        elif current_sesh[0] == 0:
-            print(f"Welcome {user_profile[2]}.")
-        while using:
-            cursor = str(
-                input(
-                    "To update your profile, type U || To view your schedule, type V || To send a subject change request, type R || To view payment status, type P || ==> "
-                )
-            ).upper()
-            if cursor == "U":
-                for i in range(len(user_profile)):
-                    print(f"|| {items[i]}: {user_profile[i]}")
-                print("What would you like to edit?")
-                print(Student.retrieve_info("tttt", 2))
-                using = False
+        # Student code block
+        elif login_type == "S":
+            student_lines = Student.line_read()[2]
+            current_sesh = Student.login(student_lines)
+            user_profile = current_sesh[1]
+            username = current_sesh[2]
+            if current_sesh == -1:
+                print("Login failed")
+            elif current_sesh[0] == 0:
+                print(f"Welcome {user_profile[2]}.")
+                t.sleep(1)
+            while session:
+                cursor = str(
+                    input(
+                        "To update your profile, type U || To view your schedule, type V || To send a subject change request, type R || To view payment status, type P || ==> "
+                    )
+                ).upper()
+                if cursor == "U":
+                    for i in range(len(user_profile)):
+                        print(f"|| {items[i]}: {user_profile[i]}")
+                    t.sleep(1)
+                    print("What would you like to edit?")
+                    print(Student.retrieve_info(username, 2))
+                    session = False
 
+        elif login_type == "E":
+            print("Exiting system...")
+            t.sleep(1)
+            running = False
 
 if __name__ == "__main__":
     print("Welcome to Tuition Centre XY")
