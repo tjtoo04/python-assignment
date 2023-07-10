@@ -299,7 +299,7 @@ def main(running=True):
                             status = True
                             n = 0
                             while status:
-                                new_username = str(input("Please enter username"))
+                                new_username = str(input("Please enter username ==> "))
                                 if new_username == student_lines[n]:
                                     n += 11
                                     if n == len(student_lines):
@@ -309,8 +309,15 @@ def main(running=True):
                                     data.append(new_username)
                                     status = False
                         if i == "Email":
-                            pass
-
+                                status = True
+                                while status:
+                                    new_email = str(input("Please enter a valid email ==> "))
+                                    if '@'not in new_email or '.com' not in new_email:
+                                        print("This is not a valid email")
+                                    else:
+                                        print("Registering... Please Wait ")
+                                        status = False
+                                        
                         if i == "Subjects":
                             n = 1
                             print(
