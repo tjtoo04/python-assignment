@@ -44,18 +44,18 @@ class User:
         while counter < 3:
             username = str(input("Please enter your username ==> "))
             password = str(input("Please enter your password ==> "))
-            while userline / 10 < len(data) / 10:
+            while userline / 11 < len(data) / 11:
                 if username == data[userline] and password == data[passline]:
                     print("Logging in...")
                     t.sleep(1)
                     status = True
                     try:
-                        return 0, data[userline : userline + 10], username
+                        return 0, data[userline : userline + 11], username
                     except:
                         return 0, data[userline:]
                 else:  # makes sure all data in Students.txt file is read
-                    userline += 10
-                    passline += 10
+                    userline += 11
+                    passline += 11
             if status == False:
                 print("Incorrect username or password.")
                 t.sleep(1)
@@ -72,11 +72,14 @@ class User:
         for i, j in enumerate(user_info):
             if j == username:
                 try:
-                    return user_info[i : i + 10]
+                    return user_info[i : i + 11]
                 except:
                     return user_info[i:]
             if i + 1 >= len(user_info):
                 return -1
+
+    def update_account():
+        pass
 
 
 class Admin(User):
@@ -149,6 +152,7 @@ class Receptionist(User):
             for i in range(len(data)):
                 student.write("\n")
                 student.write(data[i])
+            student.write("\nPaid")
         student.close()
 
     def pending_requests():
@@ -230,7 +234,7 @@ class Student(User):
         pass
 
 
-def main(session=True, running = True):
+def main(running=True):
     items = [
         "Username",
         "Password",
@@ -245,7 +249,7 @@ def main(session=True, running = True):
     ]
     subject_list = [
         "CHINESE",
-        'MALAY',
+        "MALAY",
         "ENGLISH",
         "MATHS",
         "SCIENCE",
@@ -271,6 +275,7 @@ def main(session=True, running = True):
 
         # Receptionist code block
         elif login_type == "R":
+            session = True
             receptionist_lines = Receptionist.line_read()[1]
             current_sesh = Receptionist.login(receptionist_lines)
             user_profile = current_sesh[1]
@@ -286,14 +291,35 @@ def main(session=True, running = True):
                     )
                 ).upper()
                 if cursor == "REG":
+                    student_lines = list(map(str.strip, Student.line_read()[2]))
                     temp = []
                     data = []
-                    n = 1
                     for i in items:
+                        if i == "Username":
+                            status = True
+                            n = 0
+                            while status:
+                                new_username = str(input("Please enter username"))
+                                if new_username == student_lines[n]:
+                                    n += 11
+                                    if n == len(student_lines):
+                                        print("Username already taken!")
+                                        n = 0
+                                else:
+                                    data.append(new_username)
+                                    status = False
+                        if i == "Email":
+                            pass
+
                         if i == "Subjects":
-                            print("The subjects available are " + ", ".join(subject_list))
+                            n = 1
+                            print(
+                                "The subjects available are " + ", ".join(subject_list)
+                            )
                             while n <= 3:
-                                choice = str(input(f"Please enter subject {n} ==> ")).upper()
+                                choice = str(
+                                    input(f"Please enter subject {n} ==> ")
+                                ).upper()
                                 if choice not in subject_list:
                                     print("That's not a valid subject")
                                 else:
@@ -301,13 +327,16 @@ def main(session=True, running = True):
                                     n += 1
                             data.append(",".join(temp))
                         else:
+                            print(data)
                             data.append(str(input(f"Please enter {i} ==> ")))
                     Receptionist.register(data)
                     print("User registered.")
                     t.sleep(0.5)
                 elif cursor == "D":
                     wanted_user = str(
-                        input("Enter username of the profile you would like to delete ==> ")
+                        input(
+                            "Enter username of the profile you would like to delete ==> "
+                        )
                     )
                     confirmation = str(input("Are you sure? (y/n) ==> ")).upper()
                     if confirmation == "Y":
@@ -334,6 +363,7 @@ def main(session=True, running = True):
 
         # Student code block
         elif login_type == "S":
+            session = True
             student_lines = Student.line_read()[2]
             current_sesh = Student.login(student_lines)
             user_profile = current_sesh[1]
@@ -361,6 +391,7 @@ def main(session=True, running = True):
             print("Exiting system...")
             t.sleep(1)
             running = False
+
 
 if __name__ == "__main__":
     print("Welcome to Tuition Centre XY")

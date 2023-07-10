@@ -11,3 +11,4 @@ address,
 level, - 0 for employee and admin
 subjects, - null for receptionists and admin
 the month of enrolment - null for employee and admin
+payment status
