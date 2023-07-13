@@ -69,7 +69,7 @@ class User:
                 print("Login attempts reached.")
                 return -1
 
-    # n = 0 for admin info, n = 2 for student info (for now)
+    # n = 0 for admin info, n = 1 for receptionist info, n = 2 for tutor info, n = 3 for student info
     def retrieve_info(username, n):
         user_info = list(map(str.strip, User.line_read()[n]))
         for i, j in enumerate(user_info):
@@ -300,7 +300,7 @@ def main(running=True):
                     )
                 ).upper()
                 if cursor == "REG":
-                    student_lines = list(map(str.strip, Student.line_read()[2]))
+                    student_lines = list(map(str.strip, Student.line_read()[3]))
                     temp = []
                     data = []
                     for i in items:
@@ -364,7 +364,7 @@ def main(running=True):
                     )
                     confirmation = str(input("Are you sure? (y/n) ==> ")).upper()
                     if confirmation == "Y":
-                        wanted_user_data = Student.retrieve_info(wanted_user, 2)
+                        wanted_user_data = Student.retrieve_info(wanted_user, 3)
                         if wanted_user_data == -1:
                             print("User not found.")
                             t.sleep(1)
@@ -388,6 +388,15 @@ def main(running=True):
         elif login_type == "T":
             session = True
             tutor_lines = Tutor.line_read()[2]
+            current_sesh = Tutor.login(tutor_lines)
+            user_profile = current_sesh[1]
+            username = current_sesh[2]
+            if current_sesh == -1:
+                print("Login failed")
+            elif current_sesh[0] == 0:
+                print(f"Welcome {user_profile[2]}.")
+                t.sleep(1)
+
         # Student code block
         elif login_type == "S":
             session = True

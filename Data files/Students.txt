@@ -9,13 +9,3 @@ tttt
 CHINESE,MALAY,ENGLISH
 december
 Paid
-ff
-asdf
-asdf
-2342
-tjtoo04@gmail.com
-239048285
-7, street city 00000, state
-8
-CHINESE,MALAY,SCIENCE
-Paid
