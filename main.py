@@ -34,10 +34,13 @@ class User:
         with open("Data files\Receptionist.txt", "r+") as receptionist:
             receptionist_lines = receptionist.readlines()
         receptionist.close()
+        with open("Data files\Tutor.txt", "r+") as tutor:
+            tutor_lines = tutor.readlines()
+        tutor.close()
         with open("Data files\Students.txt", "r+") as student:
             student_lines = student.readlines()
         student.close()
-        return admin_lines, receptionist_lines, student_lines
+        return admin_lines, receptionist_lines, tutor_lines, student_lines
 
     def login(data_lines, counter=0, userline=0, passline=1, status=False):
         data = list(map(str.strip, data_lines))
@@ -235,6 +238,11 @@ class Student(User):
 
 
 def main(running=True):
+    with open("Data files\SubjectSchedules.txt", "r+") as f:
+            subject_info = list(map(str.strip, f.readlines()))
+    f.close()
+    subject_schedule = {'Chinese': [['Monday', 1330, 1530],['Tuesday', 1900, 2100],['Wednesday', 1400, 1500],['Thursday', 1500, 1600], ['Friday', 1200, 1300]],
+                        'Malay': [[]]}
     items = [
         "Username",
         "Password",
@@ -246,6 +254,7 @@ def main(running=True):
         "Level",
         "Subjects",
         "Month_of_enrollment",
+        "Payment Status"
     ]
     subject_list = [
         "CHINESE",
@@ -361,10 +370,13 @@ def main(running=True):
                     t.sleep(0.5)
                     session = False
 
+        elif login_type == "T":
+            session = True
+            tutor_lines = Tutor.line_read()[2]
         # Student code block
         elif login_type == "S":
             session = True
-            student_lines = Student.line_read()[2]
+            student_lines = Student.line_read()[3]
             current_sesh = Student.login(student_lines)
             user_profile = current_sesh[1]
             username = current_sesh[2]
@@ -381,7 +393,7 @@ def main(running=True):
                 ).upper()
                 if cursor == "U":
                     for i in range(len(user_profile)):
-                        print(f"|| {items[i]}: {user_profile[i]}")
+                        print(f"|{i+1}| {items[i]}: {user_profile[i]}")
                     t.sleep(1)
                     print("What would you like to edit?")
                     print(Student.retrieve_info(username, 2))

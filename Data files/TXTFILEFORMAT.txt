@@ -8,7 +8,7 @@ IC/Passport,
 email, 
 contact number, 
 address, 
-level, - 0 for employee and admin
+level, - null for employee and admin
 subjects, - null for receptionists and admin
-the month of enrolment - null for employee and admin
-payment status
+the month of enrollment - null for employee and admin
+payment status - null for employee and admin

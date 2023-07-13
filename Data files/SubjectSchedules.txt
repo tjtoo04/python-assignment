@@ -1,4 +1,10 @@
 Chinese
+Monday
+1330
+1530
+Tuesday
+1900
+2100
 Malay
 English
 Maths
