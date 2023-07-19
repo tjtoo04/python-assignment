@@ -1,4 +1,5 @@
 import time as t
+import subject_schedule
 
 
 class User:
@@ -26,7 +27,7 @@ class User:
         self.Subjects = Subjects
         self.Month_of_enrollment = Month_of_enrollment
 
-    # Reads every line of data in Admin.txt (index 0), Receptionist.txt (index 1) and Students.txt (index 2)
+    # Reads every line of data in Admin.txt (index 0), Receptionist.txt (index 1), Tutor.txt (index 2) and Students.txt (index 3)
     def line_read():
         with open("Data files\Admin.txt", "r+") as admin:
             admin_lines = admin.readlines()
@@ -69,9 +70,9 @@ class User:
                 print("Login attempts reached.")
                 return -1
 
-    # n = 0 for admin info, n = 2 for student info (for now)
-    def retrieve_info(username, n):
-        user_info = list(map(str.strip, User.line_read()[n]))
+    # user_type = 0 for admin info, user_type = 1 for Receptionist info, user_type= 2 for tutor info, user_type = 3 for student info
+    def retrieve_info(username, user_type):
+        user_info = list(map(str.strip, User.line_read()[user_type]))
         for i, j in enumerate(user_info):
             if j == username:
                 try:
@@ -81,8 +82,90 @@ class User:
             if i + 1 >= len(user_info):
                 return -1
 
-    def update_account():
-        pass
+    def update_account(wanted_change_index, changed_info, username, user_type):
+        user_info = list(map(str.strip, User.line_read()[user_type]))
+        if user_type == 0:
+            with open("Data files\Admin.txt", "r+") as admin:
+                for i, j in enumerate(user_info):
+                    if j == username:
+                        try:
+                            user_info[i + (wanted_change_index - 1)] = changed_info
+                            admin.seek(0)
+                            admin.truncate()
+                            for x in range(len(user_info)):
+                                admin.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    admin.write("\n")
+                        except:
+                            user_info[wanted_change_index - 1] = changed_info
+                            admin.seek(0)
+                            admin.truncate()
+                            for x in range(len(user_info)):
+                                admin.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    admin.write("\n")
+
+        elif user_type == 1:
+            with open("Data files\Receptionist.txt", "r+") as receptionist:
+                for i, j in enumerate(user_info):
+                    if j == username:
+                        try:
+                            user_info[i + (wanted_change_index - 1)] = changed_info
+                            receptionist.seek(0)
+                            receptionist.truncate()
+                            for x in range(len(user_info)):
+                                receptionist.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    receptionist.write("\n")
+                        except:
+                            user_info[wanted_change_index - 1] = changed_info
+                            receptionist.seek(0)
+                            receptionist.truncate()
+                            for x in range(len(user_info)):
+                                receptionist.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    receptionist.write("\n")
+
+        elif user_type == 2:
+            with open("Data files\Tutor.txt", "r+") as tutor:
+                for i, j in enumerate(user_info):
+                    if j == username:
+                        try:
+                            user_info[i + (wanted_change_index - 1)] = changed_info
+                            tutor.seek(0)
+                            tutor.truncate()
+                            for x in range(len(user_info)):
+                                tutor.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    tutor.write("\n")
+                        except:
+                            user_info[wanted_change_index - 1] = changed_info
+                            tutor.seek(0)
+                            tutor.truncate()
+                            for x in range(len(user_info)):
+                                tutor.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    tutor.write("\n")
+        elif user_type == 3:
+            with open("Data files\Students.txt", "r+") as student:
+                for i, j in enumerate(user_info):
+                    if j == username:
+                        try:
+                            user_info[i + (wanted_change_index - 1)] = changed_info
+                            student.seek(0)
+                            student.truncate()
+                            for x in range(len(user_info)):
+                                student.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    student.write("\n")
+                        except:
+                            user_info[wanted_change_index - 1] = changed_info
+                            student.seek(0)
+                            student.truncate()
+                            for x in range(len(user_info)):
+                                student.write(user_info[x])
+                                if x < len(user_info) - 1:
+                                    student.write("\n")
 
 
 class Admin(User):
@@ -239,10 +322,9 @@ class Student(User):
 
 def main(running=True):
     with open("Data files\SubjectSchedules.txt", "r+") as f:
-            subject_info = list(map(str.strip, f.readlines()))
+        subject_info = list(map(str.strip, f.readlines()))
     f.close()
-    subject_schedule = {'Chinese': [['Monday', 1330, 1530],['Tuesday', 1900, 2100],['Wednesday', 1400, 1500],['Thursday', 1500, 1600], ['Friday', 1200, 1300]],
-                        'Malay': [[]]}
+
     items = [
         "Username",
         "Password",
@@ -254,7 +336,7 @@ def main(running=True):
         "Level",
         "Subjects",
         "Month_of_enrollment",
-        "Payment Status"
+        "Payment Status",
     ]
     subject_list = [
         "CHINESE",
@@ -268,12 +350,13 @@ def main(running=True):
         "BIOLOGY",
     ]
     while running:
+        schedule = subject_schedule.give_schedule()
+        print(schedule["Chinese"][4][5])
         login_type = str(
             input(
                 "For admin, type A || For receptionists, press R || For tutors, type T || For students, type S || To exit, type E || ==> "
             )
         ).upper()
-
         # Admin code block
         if login_type == "A":
             admin_lines = User.line_read()[0]
@@ -308,7 +391,7 @@ def main(running=True):
                             status = True
                             n = 0
                             while status:
-                                new_username = str(input("Please enter username"))
+                                new_username = str(input("Please enter username ==> "))
                                 if new_username == student_lines[n]:
                                     n += 11
                                     if n == len(student_lines):
@@ -373,6 +456,14 @@ def main(running=True):
         elif login_type == "T":
             session = True
             tutor_lines = Tutor.line_read()[2]
+            current_sesh = Tutor.login(tutor_lines)
+            user_profile = current_sesh[1]
+            username = current_sesh[2]
+            if current_sesh == -1:
+                print("Login failed")
+            elif current_sesh[0] == 0:
+                print(f"Welcome {user_profile[2]}.")
+                t.sleep(1)
         # Student code block
         elif login_type == "S":
             session = True
@@ -395,8 +486,14 @@ def main(running=True):
                     for i in range(len(user_profile)):
                         print(f"|{i+1}| {items[i]}: {user_profile[i]}")
                     t.sleep(1)
-                    print("What would you like to edit?")
-                    print(Student.retrieve_info(username, 2))
+                    wanted_change_index = int(
+                        input("What would you like to edit (1-10)? ==> ")
+                    )
+                    wanted_change = input("What would like to change it to? ==> ")
+                    changer = Student.update_account(
+                        wanted_change_index, wanted_change, username, 3
+                    )
+                    print(Student.retrieve_info(username, 3))
                     session = False
 
         elif login_type == "E":
