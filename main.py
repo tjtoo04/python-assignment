@@ -383,7 +383,7 @@ def main(running=True):
                     )
                 ).upper()
                 if cursor == "REG":
-                    student_lines = list(map(str.strip, Student.line_read()[2]))
+                    student_lines = list(map(str.strip, Student.line_read()[3]))
                     temp = []
                     data = []
                     for i in items:
@@ -391,7 +391,7 @@ def main(running=True):
                             status = True
                             n = 0
                             while status:
-                                new_username = str(input("Please enter username ==> "))
+                                new_username = str(input("Please enter a new username ==> "))
                                 if new_username == student_lines[n]:
                                     n += 11
                                     if n == len(student_lines):
@@ -400,9 +400,26 @@ def main(running=True):
                                 else:
                                     data.append(new_username)
                                     status = False
+                        if i == "Password" or i == "Name" or i == "IC" or i == "Contact_number" or i == "Level" or i == "Month_of_enrollment":
+                            new_info = str(input(f"Please enter {i} ==>"))
+                            data.append(new_info)
                         if i == "Email":
-                            pass
-
+                            status = True
+                            while status:
+                                new_email = str(input("Please enter a valid email ==> "))
+                                if '@'not in new_email or '.com' not in new_email:
+                                    print("This is not a valid email. Try again")
+                                else:
+                                    data.append(new_email)
+                                    status = False
+                        if i == "Address":
+                            unit_no = str(input("Please enter your unit number ==> "))
+                            street = str(input("Please enter your street address ==> "))
+                            city = str(input("Please enter your city ==> "))
+                            postcode = str(input("Please enter your postcode ==> "))
+                            state = str(input("Please enter your state ==> "))
+                            address = f"{unit_no}, {street} {city} {postcode}, {state}"
+                            data.append(address)
                         if i == "Subjects":
                             n = 1
                             print(
@@ -418,9 +435,7 @@ def main(running=True):
                                     temp.append(choice)
                                     n += 1
                             data.append(",".join(temp))
-                        else:
-                            print(data)
-                            data.append(str(input(f"Please enter {i} ==> ")))
+                    print(data)
                     Receptionist.register(data)
                     print("User registered.")
                     t.sleep(0.5)
@@ -432,7 +447,7 @@ def main(running=True):
                     )
                     confirmation = str(input("Are you sure? (y/n) ==> ")).upper()
                     if confirmation == "Y":
-                        wanted_user_data = Student.retrieve_info(wanted_user, 2)
+                        wanted_user_data = Student.retrieve_info(wanted_user, 3)
                         if wanted_user_data == -1:
                             print("User not found.")
                             t.sleep(1)
@@ -493,6 +508,7 @@ def main(running=True):
                     changer = Student.update_account(
                         wanted_change_index, wanted_change, username, 3
                     )
+                    print("Account info changed.")
                     print(Student.retrieve_info(username, 3))
                     session = False
 
