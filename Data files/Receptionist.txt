@@ -1,8 +1,12 @@
-a
-a
+Receptionist
+b
+ttt
 Too Tze Jiat
 040610555555
 tjtoo04@gmail.com
 0122222222
 11, Random Street, City
+null
+null
+null
 null
