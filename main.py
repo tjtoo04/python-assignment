@@ -95,6 +95,7 @@ class Receptionist(User):
     # Registers new students
     def register(data: list):
         with open("Data files\AllUserData.txt", "a+") as student:
+            student.write("Student")
             for i in range(len(data)):
                 student.write("\n")
                 student.write(data[i])
@@ -222,7 +223,7 @@ class Student(User):
         elif payment_status == "Unpaid":
             choice = input(f"Type P to pay the amount of: RM{due} or type C to cancel ==> ").upper()
             if choice == "P":
-                
+                pass
 
 
 
@@ -244,28 +245,28 @@ def receptionist(user_data: list, items: list, subject_list: list):
             data_lines = User.line_read()
             temp = []
             data = []
+            taken = None
             for i in items:
                 if i == "Username":
                     status = True
-                    n = 0
                     while status:
                         new_username = input("Please enter a new username ==> ")
-
-                        if new_username == data_lines[n]:
-                            n += 11
-                            if n == len(data_lines):
-                                print("Username already taken!")
-                                n = 0
-                        else:
+                        for i,j in enumerate(data_lines):
+                            if j == new_username:
+                                print("Username already taken.")
+                                taken = j
+                        if new_username != taken:
                             data.append(new_username)
                             status = False
+                        
+                            
+
                 if (
                     i == "Password"
-                    or i == "Name"
+                    or i == "Name           "
                     or i == "IC"
                     or i == "Level"
                     or i == "Contact number"
-                    or i == "Month of enrollment"
                 ):
                     new_info = input(f"Please enter {i} ==>")
                     data.append(new_info)
@@ -286,9 +287,24 @@ def receptionist(user_data: list, items: list, subject_list: list):
                     state = input("Please enter your state ==> ")
                     address = f"{unit_no}, {street} {city} {postcode}, {state}"
                     data.append(address)
+                if i == "Month of enrollment":
+                    status = True
+                    month_list = ["1","2","3","4","5","6","7","8","9","10","11","12","JAN","JANUARY","FEB","FEBRUARY","MAR","MARCH","APR","APRIL","MAY","JUN","JUNE","JUL","JULAI","AUG","AUGUST","SEP","SEPT","SEPTEMBER","OCT","OCTOBER","NOV","NOVEMBER","DEC","DECEMBER"]
+                    while status:
+                        month = str(input("Please enter the month"))
+                        if month not in month_list:
+                            print("Please enter a valid month ")
+                        else:
+                            if month.isalpha():
+                                data.append(month.upper())
+                                status = False
+                            else:
+                                data.append(month)
+                                status = False
+
                 if i == "Subjects":
                     n = 1
-                    print("The subjects available are " + ", ".join(subject_list))
+                    print("The subjects available are " + ", ".join(subject_list),"(You can only register 3 subjects)")
                     while n <= 3:
                         choice = input(f"Please enter subject {n} ==> ").upper()
                         if choice not in subject_list:
@@ -339,7 +355,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
         elif cursor == "ENR":
             request_counter = Receptionist.subject_enrollment_changer()
         elif cursor == "REC":
-
+            pass
         elif cursor == "E":
             print("Logging out...")
             t.sleep(1)
