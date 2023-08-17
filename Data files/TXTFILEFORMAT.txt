@@ -1,8 +1,14 @@
 THIS FILE IS NOT USED, JUST FOR KNOWLEDGE OF FORMATTING OF TXT FILES
 
 The format for all students txt file is:
-User
-Password
-Name
-Age
-Subjects
+username,
+password,
+name, 
+IC/Passport, 
+email, 
+contact number, 
+address, 
+level, - null for employee and admin
+subjects, - null for receptionists and admin
+the month of enrollment - null for employee and admin
+payment status - null for employee and admin
