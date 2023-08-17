@@ -1,5 +1,5 @@
 import time as t
-import subject_schedule
+import subject_schedule as schedule_manager
 from dataclasses import dataclass
 
 
@@ -39,7 +39,7 @@ class User:
                     print("Login attempts reached.")
                     return -1
 
-    def authenticator(data):
+    def authenticator(data: list):
         if data[0] == "Admin":
             return 0
         elif data[0] == "Receptionist":
@@ -50,7 +50,7 @@ class User:
             return 3
 
     # user_type = 0 for admin info, user_type = 1 for Receptionist info, user_type= 2 for tutor info, user_type = 3 for student info
-    def retrieve_info(username):
+    def retrieve_info(username: list):
         user_info = User.line_read()
         for i, j in enumerate(user_info):
             if j == username:
@@ -61,7 +61,7 @@ class User:
             if i + 1 >= len(user_info):
                 return -1
 
-    def update_account(wanted_change_index, changed_info, username):
+    def update_account(wanted_change_index: int, changed_info: str, username: list):
         data = User.line_read()
         with open("Data files\AllUserData.txt", "r+") as cursor:
             for i, j in enumerate(data):
@@ -93,7 +93,7 @@ class Admin(User):
 @dataclass
 class Receptionist(User):
     # Registers new students
-    def register(data):
+    def register(data: list):
         with open("Data files\AllUserData.txt", "a+") as student:
             for i in range(len(data)):
                 student.write("\n")
@@ -101,75 +101,92 @@ class Receptionist(User):
             student.write("\nPaid")
         student.close()
 
-    def delete_requests(user_choice, subject_list, user_index):
+    def delete_requests(user_choice: str, subject_list: list):
         with open("Data files/StudentRequests.txt", "r+") as cursor:
             requests = list(map(str.strip, cursor.readlines()))
+            subject_change_info = f"{user_choice},{','.join(subject_list[1:])}"
             cursor.seek(0)
             cursor.truncate()
             for j in requests:
-                if j != user_choice and j != subject_list[user_index]:
+                if j != subject_change_info:
                     cursor.writelines(f"{j}\n")
 
-    def subject_enrollment_changer(username_list=[], subject_list=[]):
-        with open("Data files/StudentRequests.txt", "r") as f:
-            student_request_data = list(map(str.strip, f.readlines()))
-            for i, j in enumerate(student_request_data):
-                username_list.append(j) if i % 2 == 0 else subject_list.append(j)
-        print(f"Total number of pending requests: {len(subject_list)}")
-        print(f"Pending requests from: {', '.join(set(username_list))}")
-        while True:
-            user_choice = input("Enter the user to check on their requests ==> ")
-            if user_choice in username_list:
-                user_index = username_list.index(user_choice)
-                all_student_data = User.line_read()
-                user_subjects = subject_list[user_index].split(",")
-                for i, j in enumerate(all_student_data):
-                    if j == user_choice:
-                        wanted_student_data = all_student_data[i - 1 : i + 12]
-                        print(
-                            f"{user_choice} would like to change their enrollment of {user_subjects[0]} to {user_subjects[1]}."
+    def subject_enrollment_changer(running=True):
+        while running:
+            with open("Data files/StudentRequests.txt", "r") as f:
+                changing_user = []
+                student_request_data = list(map(str.strip, f.readlines()))
+                data = [x.split(",") for x in student_request_data]
+                names = [x[0] for x in data]
+                subjects = [x[1:] for x in data]
+                print(data)
+            print(f"Total number of pending requests: {len(subjects)}")
+            print(f"Pending requests from: {', '.join(set(names))}")
+            while True:
+                user_choice = input("Enter the user to check on their requests ==> ")
+                if user_choice in names:
+                    for i in data:
+                        if i[0] == user_choice:
+                            changing_user.append(i)
+                            print(changing_user)
+                    all_student_data = User.line_read()
+                    for i, j in enumerate(all_student_data):
+                        if j == user_choice:
+                            wanted_student_data = all_student_data[i - 1 : i + 12]
+                            for i in range(len(changing_user)):
+                                print(
+                                    f"{user_choice} would like to change their enrollment of {changing_user[i][1]} to {changing_user[i][2]} ({i+1})."
+                                )
+                    selection = (
+                        int(input("Select which request you would like to select ==> "))
+                        - 1
+                    )
+                    subject_list = changing_user[selection]
+                    approval = input(
+                        "Do you want to approve this request? (Y/N) ==> "
+                    ).upper()
+                    if approval == "N":
+                        Receptionist.delete_requests(
+                            user_choice,
+                            subject_list,
                         )
-                approval = input(
-                    "Do you want to approve this request? (Y/N) ==> "
-                ).upper()
-                if approval == "N":
-                    Receptionist.delete_requests(user_choice, subject_list, user_index)
-                    print("Request deleted.")
-                elif approval == "Y":
-                    old_student_subjects = wanted_student_data[9].split(",")
-                    for index, subject in enumerate(old_student_subjects):
-                        if subject == user_subjects[0]:
-                            old_student_subjects[index] = user_subjects[1]
-                            new_student_data = wanted_student_data[9] = ",".join(
-                                old_student_subjects
-                            )
+                        print("Request deleted.")
+                    elif approval == "Y":
+                        old_student_subjects = wanted_student_data[9].split(",")
+                        for index, subject in enumerate(old_student_subjects):
+                            if subject == subject_list[1]:
+                                old_student_subjects[index] = subject_list[2]
+                                new_student_data = wanted_student_data[9] = ",".join(
+                                    old_student_subjects
+                                )
 
-                    with open("Data files/AllUserData.txt", "r+") as cursor:
-                        student_lines = User.line_read()
-                        for i, line in enumerate(student_lines):
-                            if line == user_choice:
-                                student_lines[i + 8] = new_student_data
-                        cursor.seek(0)
-                        cursor.truncate
-                        for line in student_lines:
-                            cursor.writelines(f"{line}\n")
-                    Receptionist.delete_requests(user_choice, subject_list, user_index)
-                    print("Request deleted.")
-            else:
-                print("Invalid user")
+                        with open("Data files/AllUserData.txt", "r+") as cursor:
+                            student_lines = User.line_read()
+                            for i, line in enumerate(student_lines):
+                                if line == user_choice:
+                                    student_lines[i + 8] = new_student_data
+                            cursor.seek(0)
+                            cursor.truncate
+                            for line in student_lines:
+                                cursor.writelines(f"{line}\n")
+                        print("Subject changed.")
+                        Receptionist.delete_requests(user_choice, subject_list)
+                        print("Request deleted.")
+                        break
+                else:
+                    print("Invalid user")
 
     # Deletes the desired student's info
-    def delete_student(user_data):
+    def delete_student(user_data: list):
         with open("Data files/AllUserData.txt", "r+") as cursor:
             data_lines = User.line_read()
             cursor.seek(0)
             cursor.truncate()
-            data_lines.pop(data_lines.index(user_data[1])-1)
+            data_lines.pop(data_lines.index(user_data[1]) - 1)
             for i in user_data[1:]:
                 data_lines.pop(data_lines.index(i))
             for i in data_lines:
                 cursor.write(f"{i}\n")
-
 
 
 @dataclass
@@ -177,13 +194,203 @@ class Tutor(User):
     def check_schedules():
         pass
 
+    def edit_schedule(subject_schedule, subject, day, level, start_time, end_time):
+        edited_schedule = schedule_manager.edit_schedule(
+            subject_schedule, subject, day, level, start_time, end_time
+        )
+        schedule_manager.save_schedule(edited_schedule)
+
 
 @dataclass
 class Student(User):
-    def subject_change_requests(name, wanted_change, changed_subject):
+    def subject_change_requests(name: str, wanted_change: str, changed_subject: str):
         with open("Data files/StudentRequests.txt", "a+") as f:
             f.writelines(f"{name},{wanted_change},{changed_subject}\n")
 
+    def view_payment_info(user_data: list, prices=None):
+        if prices is None:
+            prices = 0
+        subject_prices = schedule_manager.get_subject_prices()
+        for i in user_data[9].split(","):
+            prices += int(subject_prices[i])
+        return prices
+
+    def check_payment_status(user_info: list, due):
+        payment_status = user_info[-1]
+        if payment_status == "Paid":
+            print("You have already paid!")
+        elif payment_status == "Unpaid":
+            choice = input(f"Type P to pay the amount of: RM{due} or type C to cancel ==> ").upper()
+            if choice == "P":
+                
+
+
+
+def admin(user_data):
+    print("Welcome Admin")
+    t.sleep(1)
+
+
+def receptionist(user_data: list, items: list, subject_list: list):
+    session = True
+    username = user_data[1]
+    print(f"Welcome {user_data[3]}.")
+    t.sleep(1)
+    while session:
+        cursor = input(
+            "To register a student, type REG || To update subject enrollment of a student, type ENR || To generate receipts, type REC || To delete a student, type D || To update your profile, type U || To exit, type E || ==> "
+        ).upper()
+        if cursor == "REG":
+            data_lines = User.line_read()
+            temp = []
+            data = []
+            for i in items:
+                if i == "Username":
+                    status = True
+                    n = 0
+                    while status:
+                        new_username = input("Please enter a new username ==> ")
+
+                        if new_username == data_lines[n]:
+                            n += 11
+                            if n == len(data_lines):
+                                print("Username already taken!")
+                                n = 0
+                        else:
+                            data.append(new_username)
+                            status = False
+                if (
+                    i == "Password"
+                    or i == "Name"
+                    or i == "IC"
+                    or i == "Level"
+                    or i == "Contact number"
+                    or i == "Month of enrollment"
+                ):
+                    new_info = input(f"Please enter {i} ==>")
+                    data.append(new_info)
+                if i == "Email":
+                    status = True
+                    while status:
+                        new_email = input("Please enter a valid email ==> ")
+                        if "@" not in new_email or ".com" not in new_email:
+                            print("This is not a valid email. Try again")
+                        else:
+                            data.append(new_email)
+                            status = False
+                if i == "Address":
+                    unit_no = input("Please enter your unit number ==> ")
+                    street = input("Please enter your street address ==> ")
+                    city = input("Please enter your city ==> ")
+                    postcode = input("Please enter your postcode ==> ")
+                    state = input("Please enter your state ==> ")
+                    address = f"{unit_no}, {street} {city} {postcode}, {state}"
+                    data.append(address)
+                if i == "Subjects":
+                    n = 1
+                    print("The subjects available are " + ", ".join(subject_list))
+                    while n <= 3:
+                        choice = input(f"Please enter subject {n} ==> ").upper()
+                        if choice not in subject_list:
+                            print("That's not a valid subject")
+                        else:
+                            temp.append(choice)
+                            n += 1
+                    data.append(",".join(temp))
+            print(data)
+            Receptionist.register(data)
+            print("User registered.")
+            t.sleep(0.5)
+        elif cursor == "D":
+            wanted_user = input(
+                "Enter username of the profile you would like to delete ==> "
+            )
+            confirmation = input("Are you sure? (y/n) ==> ").upper()
+            if confirmation == "Y":
+                wanted_user_data = User.retrieve_info(wanted_user)
+                authentication = User.authenticator(wanted_user_data)
+                print(wanted_user_data, authentication)
+                if authentication == -1:
+                    print("User not found.")
+                    t.sleep(1)
+                    print("Going back...")
+                    t.sleep(1)
+                elif authentication < 3:
+                    print("You cannot delete Admin, Receptionists and Tutors.")
+                else:
+                    Receptionist.delete_student(wanted_user_data)
+                    t.sleep(0.5)
+                    print("User deleted!")
+                    t.sleep(0.5)
+            elif confirmation == "N":
+                print("Going back...")
+                t.sleep(1)
+        elif cursor == "U":
+            for i in range(len(user_data)):
+                print(f"|{i+1}| {items[i]}: {user_data[i]}")
+            t.sleep(1)
+            wanted_change_index = int(input("What would you like to edit (2-11)? ==> "))
+            wanted_change = input("What would like to change it to? ==> ")
+            changer = Receptionist.update_account(
+                wanted_change_index, wanted_change, username
+            )
+            print("Account info changed.")
+            session = False
+        elif cursor == "ENR":
+            request_counter = Receptionist.subject_enrollment_changer()
+        elif cursor == "REC":
+
+        elif cursor == "E":
+            print("Logging out...")
+            t.sleep(1)
+            print("Logout successfull.")
+            t.sleep(0.5)
+            session = False
+
+
+def tutor(user_data: list, items: list, subject_list: list):
+    session = True
+    username = user_data[1]
+    print(f"Welcome {user_data[3]}.")
+    t.sleep(1)
+    while session:
+        cursor = input("To change your current schedule, type C").upper()
+        if cursor == "C":
+            valid = True
+            subjects = list(map(str.strip, user_data[9].split(",")))
+            days = schedule_manager.give_days()
+            level = list(x for x in range(1, 6))
+            print(f"Subjects you are teaching:")
+            for i in subjects:
+                print(f"{i}")
+            while valid:
+                chosen_subject = input(
+                    "Select which subject you would like to check ==> "
+                ).upper()
+                if chosen_subject not in subjects:
+                    print("Invalid subject")
+                else:
+                    break
+            while valid:
+                chosen_day = input(
+                    "Select which day's schedule you would like to see ==> "
+                ).upper()
+                if chosen_day not in days:
+                    print("Invalid day")
+                else:
+                    break
+            while valid:
+                chosen_level = int(input("Enter the level of students ==> "))
+                if chosen_level not in level:
+                    print("Invalid level")
+                else:
+                    valid = False
+            tutor_subjects = schedule_manager.give_schedule(
+                chosen_subject, chosen_day, chosen_level
+            )
+            print(
+                f"Subject: {chosen_subject}\nLevel: Form {tutor_subjects[0]}\nStart time: {tutor_subjects[1]}\nEnd time: {tutor_subjects[2]}"
+            )
 
 
 def main(running=True):
@@ -201,145 +408,21 @@ def main(running=True):
         "Month of enrollment",
         "Payment Status",
     ]
-    subject_list = subject_schedule.give_subjectlist()
+    subject_list = schedule_manager.give_subjectlist()
     while running:
         user_data = User.login()
         login_type = User.authenticator(user_data)
         # Admin code block
         if login_type == 0:
-            print("Welcome Admin")
-            t.sleep(1)
+            admin(user_data, login_type)
 
         # Receptionist code block
         elif login_type == 1:
-            session = True
-            username = user_data[1]
-            print(f"Welcome {user_data[3]}.")
-            t.sleep(1)
-            while session:
-                cursor = input(
-                    "To register a student, type REG || To update subject enrollment of a student, type ENR || To generate receipts, type REC || To delete a student, type D || To update your profile, type U || To exit, type E || ==> "
-                ).upper()
-                if cursor == "REG":
-                    data_lines = User.line_read()
-                    temp = []
-                    data = []
-                    for i in items:
-                        if i == "Username":
-                            status = True
-                            n = 0
-                            while status:
-                                new_username = input("Please enter a new username ==> ")
-
-                                if new_username == data_lines[n]:
-                                    n += 11
-                                    if n == len(data_lines):
-                                        print("Username already taken!")
-                                        n = 0
-                                else:
-                                    data.append(new_username)
-                                    status = False
-                        if (
-                            i == "Password"
-                            or i == "Name"
-                            or i == "IC"
-                            or i == "Level"
-                            or i == "Contact number"
-                            or i == "Month of enrollment"
-                        ):
-                            new_info = input(f"Please enter {i} ==>")
-                            data.append(new_info)
-                        if i == "Email":
-                            status = True
-                            while status:
-                                new_email = input("Please enter a valid email ==> ")
-                                if "@" not in new_email or ".com" not in new_email:
-                                    print("This is not a valid email. Try again")
-                                else:
-                                    data.append(new_email)
-                                    status = False
-                        if i == "Address":
-                            unit_no = input("Please enter your unit number ==> ")
-                            street = input("Please enter your street address ==> ")
-                            city = input("Please enter your city ==> ")
-                            postcode = input("Please enter your postcode ==> ")
-                            state = input("Please enter your state ==> ")
-                            address = f"{unit_no}, {street} {city} {postcode}, {state}"
-                            data.append(address)
-                        if i == "Subjects":
-                            n = 1
-                            print(
-                                "The subjects available are " + ", ".join(subject_list)
-                            )
-                            while n <= 3:
-                                choice = input(f"Please enter subject {n} ==> ").upper()
-                                if choice not in subject_list:
-                                    print("That's not a valid subject")
-                                else:
-                                    temp.append(choice)
-                                    n += 1
-                            data.append(",".join(temp))
-                    print(data)
-                    Receptionist.register(data)
-                    print("User registered.")
-                    t.sleep(0.5)
-                elif cursor == "D":
-                    wanted_user = input(
-                        "Enter username of the profile you would like to delete ==> "
-                    )
-                    confirmation = input("Are you sure? (y/n) ==> ").upper()
-                    if confirmation == "Y":
-                        wanted_user_data = User.retrieve_info(wanted_user)
-                        authentication = User.authenticator(wanted_user_data)
-                        print(wanted_user_data, authentication)
-                        if authentication == -1:
-                            print("User not found.")
-                            t.sleep(1)
-                            print("Going back...")
-                            t.sleep(1)
-                        elif authentication < 3:
-                            print("You cannot delete Admin, Receptionists and Tutors.")
-                        else:
-                            Receptionist.delete_student(wanted_user_data)
-                            t.sleep(0.5)
-                            print("User deleted!")
-                            t.sleep(0.5)
-                    elif confirmation == "N":
-                        print("Going back...")
-                        t.sleep(1)
-                elif cursor == "U":
-                    for i in range(len(user_data)):
-                        print(f"|{i+1}| {items[i]}: {user_data[i]}")
-                    t.sleep(1)
-                    wanted_change_index = int(
-                        input("What would you like to edit (2-11)? ==> ")
-                    )
-                    wanted_change = input("What would like to change it to? ==> ")
-                    changer = Receptionist.update_account(
-                        wanted_change_index, wanted_change, username
-                    )
-                    print("Account info changed.")
-                    session = False
-                elif cursor == "ENR":
-                    request_counter = Receptionist.subject_enrollment_changer()
-                elif cursor == "E":
-                    print("Logging out...")
-                    t.sleep(1)
-                    print("Logout successfull.")
-                    t.sleep(0.5)
-                    session = False
+            receptionist(user_data, items, subject_list)
 
         elif login_type == 2:
-            session = True
-            tutor_lines = Tutor.line_read()[2]
-            current_sesh = Tutor.login(tutor_lines)
-            user_data = current_sesh[1]
-            username = current_sesh[2]
-            if current_sesh == -1:
-                print("Login failed")
-            elif current_sesh[0] == 0:
-                print(f"Welcome {user_data[2]}.")
-                t.sleep(1)
+            tutor(user_data, items, subject_list)
+            
         # Student code block
         elif login_type == 3:
             session = True
@@ -392,13 +475,13 @@ def main(running=True):
                         day = input(
                             "Please enter what day of your schedule that you would like to see ==> "
                         ).upper()
-                        if day not in subject_schedule.give_days():
+                        if day not in schedule_manager.give_days():
                             print("Invalid day")
                         else:
                             break
                     for i in subject_info.split(","):
                         print(
-                            f"{i} || {','.join(subject_schedule.give_schedule(i, day, student_level)[1:])}"
+                            f"{i} || {','.join(schedule_manager.give_schedule(i, day, student_level)[1:])}"
                         )
 
                 elif cursor == "R":
@@ -425,6 +508,9 @@ def main(running=True):
                     Student.subject_change_requests(
                         username, wanted_subject, subject_change
                     )
+                elif cursor == "P":
+                    total = Student.view_payment_info(user_data)
+                    print(total)
                 elif cursor == "E":
                     session = False
 
