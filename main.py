@@ -25,8 +25,8 @@ class User:
     def login(counter=0):
         data = User.line_read()
         while counter < 3:
-            username = input("Please enter your username ==> ")
-            password = input("Please enter your password ==> ")
+            username = input("Please enter your username or type 'E' to exit ==> ")
+            password = input("Please enter your password or type 'E' to exit ==> ")
             for i, j in enumerate(data):
                 try:
                     if username == j and password == data[i + 1]:
@@ -55,7 +55,7 @@ class User:
         for i, j in enumerate(user_info):
             if j == username:
                 try:
-                    return user_info[i - 1 : i + 11]
+                    return user_info[i - 1 : i + 10]
                 except IndexError:
                     return user_info[i - 1 :]
             if i + 1 >= len(user_info):
@@ -83,23 +83,57 @@ class User:
                             if x < len(data) - 1:
                                 cursor.write("\n")
 
+    def store_payment(username, balance):
+        with open("Data files/StudentPayments.txt", "r+") as f:
+            f.write(f"{username},{balance}\n")
+
+    def update_payment_status(user_data):
+        new_price = Student.view_payment_info(user_data)
+        with open("Data files/StudentPayments.txt", "r+") as f:
+            data = list(map(str.strip, f.readlines()))
+            username = [x.split(",")[0] for x in data]
+            prices = [int(x.split(",")[1]) for x in data]
+            for i, j in enumerate(username):
+                if j == user_data[1]:
+                    prices[i] = new_price-prices[i]
+                    joiner = [f"{username[x]},{prices[x]}" for x in range(len(username))]
+            f.seek(0)
+            f.truncate()
+            for i in joiner:
+                f.write(f"{i}\n")  
 
 @dataclass
 class Admin(User):
     def register():
         pass
+    
+    def student_count(count = 0):
+        data = User.line_read()
+        for i in data:
+            if i == "Student":
+                count += 1
+        return count
+            
 
 
 @dataclass
 class Receptionist(User):
     # Registers new students
-    def register(data: list):
+    def register(data: list, prices = None):
+        if prices is None:
+            prices = 0
         with open("Data files\AllUserData.txt", "a+") as student:
+            student.write("Student")
             for i in range(len(data)):
                 student.write("\n")
                 student.write(data[i])
             student.write("\nPaid")
-        student.close()
+        subject_prices = schedule_manager.get_subject_prices()
+        subjects = data[8].split(",")
+        for i in subjects:
+            prices += subject_prices[i]
+        with open("Data files\StudentPayments.txt", "a+") as f:
+            f.write(f"{data[0]},{prices}\n")
 
     def delete_requests(user_choice: str, subject_list: list):
         with open("Data files/StudentRequests.txt", "r+") as cursor:
@@ -119,7 +153,6 @@ class Receptionist(User):
                 data = [x.split(",") for x in student_request_data]
                 names = [x[0] for x in data]
                 subjects = [x[1:] for x in data]
-                print(data)
             print(f"Total number of pending requests: {len(subjects)}")
             print(f"Pending requests from: {', '.join(set(names))}")
             while True:
@@ -128,14 +161,10 @@ class Receptionist(User):
                     for i in data:
                         if i[0] == user_choice:
                             changing_user.append(i)
-                            print(changing_user)
-                    all_student_data = User.line_read()
-                    for i, j in enumerate(all_student_data):
-                        if j == user_choice:
-                            wanted_student_data = all_student_data[i - 1 : i + 12]
-                            for i in range(len(changing_user)):
-                                print(
-                                    f"{user_choice} would like to change their enrollment of {changing_user[i][1]} to {changing_user[i][2]} ({i+1})."
+                    wanted_student_data = User.retrieve_info(user_choice)
+                    for i in range(len(changing_user)):
+                        print(
+                            f"{user_choice} would like to change their enrollment of {changing_user[i][1]} to {changing_user[i][2]} ({i+1})."
                                 )
                     selection = (
                         int(input("Select which request you would like to select ==> "))
@@ -156,23 +185,12 @@ class Receptionist(User):
                         for index, subject in enumerate(old_student_subjects):
                             if subject == subject_list[1]:
                                 old_student_subjects[index] = subject_list[2]
-                                new_student_data = wanted_student_data[9] = ",".join(
-                                    old_student_subjects
-                                )
-
-                        with open("Data files/AllUserData.txt", "r+") as cursor:
-                            student_lines = User.line_read()
-                            for i, line in enumerate(student_lines):
-                                if line == user_choice:
-                                    student_lines[i + 8] = new_student_data
-                            cursor.seek(0)
-                            cursor.truncate
-                            for line in student_lines:
-                                cursor.writelines(f"{line}\n")
+                        User.update_account(10,",".join(old_student_subjects), wanted_student_data[1])
                         print("Subject changed.")
                         Receptionist.delete_requests(user_choice, subject_list)
+                        User.update_payment_status(wanted_student_data)
                         print("Request deleted.")
-                        break
+                        running = False
                 else:
                     print("Invalid user")
 
@@ -187,6 +205,22 @@ class Receptionist(User):
                 data_lines.pop(data_lines.index(i))
             for i in data_lines:
                 cursor.write(f"{i}\n")
+
+    def update_payment_status(username: str, user_info: list):
+        User.update_account(12, "Paid", username)
+        print("Payment received")
+        Receptionist.receipt_generator(user_info)
+
+    def receipt_generator(user_info: list):
+        subject_price = schedule_manager.get_subject_prices()
+        user_subjects = user_info[9].split(",")
+        payment = [subject_price[x] for x in user_subjects]
+        print(f"Receipt for {user_info[1]}")
+        print("-------------------------------------")
+        for i in range(3):
+            print(f"{list(subject_price.keys())[i]}: {payment[i]}")
+        print("-------------------------------------")
+        print(f"Total paid amount: {sum(payment)}\n")
 
 
 @dataclass
@@ -215,14 +249,45 @@ class Student(User):
             prices += int(subject_prices[i])
         return prices
 
-    def check_payment_status(user_info: list, due):
+    def check_payment_status(user_info: list):
         payment_status = user_info[-1]
         if payment_status == "Paid":
             print("You have already paid!")
         elif payment_status == "Unpaid":
-            choice = input(f"Type P to pay the amount of: RM{due} or type C to cancel ==> ").upper()
-            if choice == "P":
-                
+            with open("Data files/StudentPayments.txt", "r") as f:
+                data = list(map(str.strip, f.readlines()))
+                username = [x.split(",")[0] for x in data]
+                prices = [int(x.split(",")[1]) for x in data]
+                for i,j in enumerate(username):
+                    if j == user_info[1]:
+                        if prices[i] != 0:
+                            choice = input(f"Type P to pay the amount of: RM{prices[i]} or type C to cancel ==> ").upper()
+                            if choice == "P":
+                                print("Paying...")
+                                User.store_payment(user_info[1], prices[i])
+                                Receptionist.update_payment_status(user_info[1], user_info)
+                        else:
+                            balance = Student.view_payment_info(user_info)
+                            choice = input(f"Type P to pay the amount of: RM{balance} or type C to cancel ==> ").upper()
+                            if choice == "P":
+                                print("Paying...")
+                                User.store_payment(user_info[1], balance)
+                                Receptionist.update_payment_status(user_info[1], user_info)
+    
+    def view_schedule(subject_info, student_level, running = True):
+        while running:
+            day = input(
+                        "Please enter what day of your schedule that you would like to see ==> "
+                        ).upper()
+            if day not in schedule_manager.give_days():
+                print("Invalid day")
+            else:
+                running = False
+            for i in subject_info.split(","):
+                print(
+                    f"{i} || {','.join(schedule_manager.give_schedule(i, day, student_level)[1:])}"
+                )
+            
 
 
 
@@ -247,15 +312,14 @@ def receptionist(user_data: list, items: list, subject_list: list):
             for i in items:
                 if i == "Username":
                     status = True
-                    n = 0
+                    n = 1
                     while status:
                         new_username = input("Please enter a new username ==> ")
-
-                        if new_username == data_lines[n]:
-                            n += 11
-                            if n == len(data_lines):
-                                print("Username already taken!")
-                                n = 0
+                        for x in data_lines:
+                            if x == new_username:
+                                print("Username taken")
+                        if len(new_username) < 8:
+                            print("The username length must be more than 8 characters.")
                         else:
                             data.append(new_username)
                             status = False
@@ -339,7 +403,10 @@ def receptionist(user_data: list, items: list, subject_list: list):
         elif cursor == "ENR":
             request_counter = Receptionist.subject_enrollment_changer()
         elif cursor == "REC":
-
+            data = User.line_read()
+            for i,j in enumerate(data):
+                if j == "Student" and data[i+11] == "Paid":
+                    Receptionist.receipt_generator(data[i:i+12])
         elif cursor == "E":
             print("Logging out...")
             t.sleep(1)
@@ -471,18 +538,8 @@ def main(running=True):
                 elif cursor == "V":
                     subject_info = user_data[9]
                     student_level = int(user_data[8])
-                    while True:
-                        day = input(
-                            "Please enter what day of your schedule that you would like to see ==> "
-                        ).upper()
-                        if day not in schedule_manager.give_days():
-                            print("Invalid day")
-                        else:
-                            break
-                    for i in subject_info.split(","):
-                        print(
-                            f"{i} || {','.join(schedule_manager.give_schedule(i, day, student_level)[1:])}"
-                        )
+                    Student.view_schedule(subject_info, student_level)
+                        
 
                 elif cursor == "R":
                     user_subject_info = user_data[9]
@@ -509,8 +566,7 @@ def main(running=True):
                         username, wanted_subject, subject_change
                     )
                 elif cursor == "P":
-                    total = Student.view_payment_info(user_data)
-                    print(total)
+                    Student.check_payment_status(user_data)
                 elif cursor == "E":
                     session = False
 
@@ -523,3 +579,5 @@ def main(running=True):
 if __name__ == "__main__":
     print("Welcome to Tuition Centre XY")
     main()
+    #a = ["Student","bobby",'123456', 'too', '4523654355','tttt','234451','27, jalan tempura konichiwa 69420', 'sad','CHINESE,MATHS,ENGLISH','december','Paid']
+    #print(User.update_payment_status(a))

@@ -14,7 +14,7 @@ Receptionist
 b
 ttt
 Too Tze Jiat
-040610555555
+3298472897
 tjtoo04@gmail.com
 0122222222
 11, Random Street, City
@@ -57,7 +57,7 @@ fazbear, entertainment new york 54111, japan
 3
 CHINESE,MATHS,MALAY
 august
-Unpaid 
+Unpaid
 Student
 tjtoo04
 Tzejiat2004!
@@ -70,4 +70,3 @@ ttj@gmail.com
 CHINESE,MALAY,ENGLISH
 june
 Paid
-
