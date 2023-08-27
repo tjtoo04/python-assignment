@@ -1,6 +1,7 @@
 THIS FILE IS NOT USED, JUST FOR KNOWLEDGE OF FORMATTING OF TXT FILES
 
 The format for all students txt file is:
+role,
 username,
 password,
 name, 
