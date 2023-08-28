@@ -23,6 +23,11 @@ class User:
             data = list(map(str.strip, f.readlines()))
         return data
 
+    def requests_read():
+        with open("Data files/StudentRequests.txt", "r") as f:
+            data = list(map(str.strip, f.readlines()))
+        return data
+
     def login(counter=0):
         data = User.line_read()
         while counter < 3:
@@ -41,7 +46,7 @@ class User:
                     return data[i - 1 : i + 11]
                 else:
                     n += 1
-                if i == n - 1:
+                if n >= len(data):
                     print("Incorrect Username or Password")
                     counter += 1
                     n = 0
@@ -99,7 +104,7 @@ class User:
         with open("Data files/StudentPayments.txt", "r+") as f:
             f.write(f"{username},{balance}\n")
 
-    def update_payment_status(user_data: list, status: int):
+    def update_payment_info(user_data: list, status: int):
         new_price = Student.view_payment_info(user_data)
         with open("Data files/StudentPayments.txt", "r+") as f:
             data = list(
@@ -213,7 +218,7 @@ class Receptionist(User):
 
     def delete_requests(user_choice: str, subject_list: list):
         with open("Data files/StudentRequests.txt", "r+") as cursor:
-            requests = list(map(str.strip, cursor.readlines()))
+            requests = User.requests_read()
             subject_change_info = f"{user_choice},{','.join(subject_list[1:])}"
             cursor.seek(0)
             cursor.truncate()
@@ -223,12 +228,11 @@ class Receptionist(User):
 
     def subject_enrollment_changer(running=True, choosing=True):
         while running:
-            with open("Data files/StudentRequests.txt", "r") as f:
-                changing_user = []
-                student_request_data = list(map(str.strip, f.readlines()))
-                data = [x.split(",") for x in student_request_data]
-                names = [x[0] for x in data]
-                subjects = [x[1:] for x in data]
+            changing_user = []
+            student_request_data = User.requests_read()
+            data = [x.split(",") for x in student_request_data]
+            names = [x[0] for x in data]
+            subjects = [x[1:] for x in data]
             print(f"Total number of pending requests: {len(subjects)}")
             print(f"Pending requests from: {', '.join(set(names))}")
             while choosing:
@@ -281,7 +285,7 @@ class Receptionist(User):
                         )
                         print("Subject changed.")
                         Receptionist.delete_requests(user_choice, subject_list)
-                        User.update_payment_status(
+                        User.update_payment_info(
                             wanted_student_data, 1
                         )  # 1 for adding new balance
                         print("Request deleted.")
@@ -320,14 +324,74 @@ class Receptionist(User):
 
 @dataclass
 class Tutor(User):
-    def check_schedules():
-        pass
+    def check_schedules(user_data, valid=True):
+        subjects = list(map(str.strip, user_data[9].split(",")))
+        days = schedule_manager.give_days()
+        level = list(x for x in range(1, 6))
+        print(f"Subjects you are teaching:")
+        for i in subjects:
+            print(f"{i}")
+        while valid:
+            chosen_subject = input(
+                "Select which subject you would like to check ==> "
+            ).upper()
+            if chosen_subject not in subjects:
+                print("Invalid subject")
+            else:
+                break
+        while valid:
+            chosen_day = input(
+                "Select which day's schedule you would like to see ==> "
+            ).upper()
+            if chosen_day not in days:
+                print("Invalid day")
+            else:
+                break
+        while valid:
+            chosen_level = int(input("Enter the level of students ==> "))
+            try:
+                if chosen_level not in level:
+                    print("Invalid level")
+                else:
+                    valid = False
+            except ValueError:
+                print("Invalid input")
+        tutor_subjects = schedule_manager.give_schedule(
+            chosen_subject, chosen_day, chosen_level
+        )
+        print(
+            f"Subject: {chosen_subject}\nLevel: Form {tutor_subjects[0]}\nStart time: {tutor_subjects[1]}\nEnd time: {tutor_subjects[2]}"
+        )
+        return chosen_subject, chosen_day, chosen_level, tutor_subjects
 
     def edit_schedule(subject_schedule, subject, day, level, start_time, end_time):
         edited_schedule = schedule_manager.edit_schedule(
             subject_schedule, subject, day, level, start_time, end_time
         )
         schedule_manager.save_schedule(edited_schedule)
+
+    def view_student_list(user_data, students=[]):
+        student_dict = {}
+        tutor_subjects = user_data[9].split(",")
+        data = User.line_read()
+        # Adds subject with student names into a dictionary
+        for i, j in enumerate(data):
+            if j == "Student":
+                student_name = data[i + 3]
+                student_subjects = data[i + 9].split(",")
+                student_level = data[i + 8]
+                for x in student_subjects:
+                    if x not in student_dict:
+                        student_dict[x] = [student_name]
+                    else:
+                        student_dict[x] += [student_name]
+        # Checks for students with subjects taught by tutor
+        for i in tutor_subjects:
+            if i in student_dict.keys():
+                students.append([i, student_dict[i]])
+            else:
+                students.append([i, student_dict.setdefault(i, "None")])
+        return students
 
 
 @dataclass
@@ -362,7 +426,7 @@ class Student(User):
                             ).upper()
                             if choice == "P":
                                 print("Paying...")
-                                User.update_payment_status(
+                                User.update_payment_info(
                                     user_info[1], 0
                                 )  # 0 for resetting balance value
                                 Receptionist.update_payment_status(
@@ -395,6 +459,52 @@ class Student(User):
                 )
 
 
+def update_menu(user_data: list, items: list, username: str, role: int, editing=True):
+    while editing:
+        for i in range(len(user_data)):
+            print(f"|{i+1}| {items[i]}: {user_data[i]}")
+        t.sleep(1)
+        wanted_change_index = input(
+            "What would you like to edit (2-12)? (Type B to go back) ==> "
+        ).upper()
+        if wanted_change_index == "B":
+            print("Going back....")
+            editing = False
+        elif user_data[int(wanted_change_index)] == "null":
+            print("There is nothing to edit here.")
+        elif (
+            int(wanted_change_index) == 1
+            or int(wanted_change_index) == 11
+            or int(wanted_change_index) == 12
+        ):
+            print("You cannot change that.")
+        elif int(wanted_change_index) == 8:
+            unit_no = input("Please enter your unit number ==> ")
+            street = input("Please enter your street address ==> ")
+            city = input("Please enter your city ==> ")
+            postcode = input("Please enter your postcode ==> ")
+            state = input("Please enter your state ==> ")
+            address = f"{unit_no}, {street} {city} {postcode}, {state}"
+            wanted_change = address
+            changer = Student.update_account(
+                int(wanted_change_index), wanted_change, username
+            )
+            print("Account info changed.")
+
+            editing = False
+        elif int(wanted_change_index) == 10 and role == 2:
+            print("This can be done in the 'Change schedule' page.")
+        elif int(wanted_change_index) == 10 and role == 3:
+            print("This can be done in the 'Subject change request' page.")
+        else:
+            wanted_change = input("What would like to change it to? ==> ")
+            changer = Student.update_account(
+                int(wanted_change_index), wanted_change, username
+            )
+            print("Account info changed.")
+            editing = False
+
+
 def admin(user_data: list, items: list, subject_list: list):
     session = True
     username = user_data[1]
@@ -405,16 +515,7 @@ def admin(user_data: list, items: list, subject_list: list):
             "To update your profile, type U || To register employees, type REG || To remove employees, type D || To view monthly income report, type V || To exit, type E ==> "
         ).upper()
         if cursor == "U":
-            for i in range(len(user_data)):
-                print(f"|{i+1}| {items[i]}: {user_data[i]}")
-            t.sleep(1)
-            wanted_change_index = int(input("What would you like to edit (2-11)? ==> "))
-            wanted_change = input("What would like to change it to? ==> ")
-            changer = Receptionist.update_account(
-                wanted_change_index, wanted_change, username
-            )
-            print("Account info changed.")
-            session = False
+            update_menu(user_data, items, username, 0)
         elif cursor == "REG":
             registering = input(
                 "Type R to register Receptionist, type T to register Tutor ==> "
@@ -568,6 +669,8 @@ def admin(user_data: list, items: list, subject_list: list):
             print("Logging out....")
             print("Logout successfull")
             session = False
+        else:
+            print("Invalid input.")
 
 
 def receptionist(user_data: list, items: list, subject_list: list):
@@ -664,16 +767,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
                 print("Going back...")
                 t.sleep(1)
         elif cursor == "U":
-            for i in range(len(user_data)):
-                print(f"|{i+1}| {items[i]}: {user_data[i]}")
-            t.sleep(1)
-            wanted_change_index = int(input("What would you like to edit (2-11)? ==> "))
-            wanted_change = input("What would like to change it to? ==> ")
-            changer = Receptionist.update_account(
-                wanted_change_index, wanted_change, username
-            )
-            print("Account info changed.")
-            session = False
+            update_menu(user_data, items, username, 1)
         elif cursor == "ENR":
             request_counter = Receptionist.subject_enrollment_changer()
         elif cursor == "REC":
@@ -687,6 +781,8 @@ def receptionist(user_data: list, items: list, subject_list: list):
             print("Logout successfull.")
             t.sleep(0.5)
             session = False
+        else:
+            print("Invalid input.")
 
 
 def tutor(user_data: list, items: list, subject_list: list):
@@ -695,43 +791,119 @@ def tutor(user_data: list, items: list, subject_list: list):
     print(f"Welcome {user_data[3]}.")
     t.sleep(1)
     while session:
-        cursor = input("To change your current schedule, type C").upper()
-        if cursor == "C":
+        cursor = input(
+            "To view your current schedule, type V || To change schedule info, type C || To see student list, type S || To update your account, type U || To exit, type E ==> "
+        ).upper()
+        if cursor == "V":
+            Tutor.check_schedules(user_data)
+        elif cursor == "C":
+            data = Tutor.check_schedules(user_data)
+            tutor_subjects = data[3]
             valid = True
-            subjects = list(map(str.strip, user_data[9].split(",")))
-            days = schedule_manager.give_days()
-            level = list(x for x in range(1, 6))
-            print(f"Subjects you are teaching:")
-            for i in subjects:
-                print(f"{i}")
             while valid:
-                chosen_subject = input(
-                    "Select which subject you would like to check ==> "
-                ).upper()
-                if chosen_subject not in subjects:
-                    print("Invalid subject")
-                else:
-                    break
-            while valid:
-                chosen_day = input(
-                    "Select which day's schedule you would like to see ==> "
-                ).upper()
-                if chosen_day not in days:
-                    print("Invalid day")
-                else:
-                    break
-            while valid:
-                chosen_level = int(input("Enter the level of students ==> "))
-                if chosen_level not in level:
-                    print("Invalid level")
-                else:
+                if "NULL" in tutor_subjects:
+                    print("There is nothing to edit here.")
                     valid = False
-            tutor_subjects = schedule_manager.give_schedule(
-                chosen_subject, chosen_day, chosen_level
-            )
-            print(
-                f"Subject: {chosen_subject}\nLevel: Form {tutor_subjects[0]}\nStart time: {tutor_subjects[1]}\nEnd time: {tutor_subjects[2]}"
-            )
+                new_start_time = input(
+                    "Enter a new start time or retype the old start time if no change is wanted (in 24hour format) ==> "
+                )
+                if len(new_start_time) < 4:
+                    print("The tuition centre is closed at that time.")
+                elif int(new_start_time) > 2100:
+                    print("The tuition centre is closed at that time.")
+                elif new_start_time.isdigit() == False:
+                    print("That is not a valid time.")
+                while valid:
+                    new_end_time = input(
+                        "Enter a new end time or retype the old end time if no change is wanted (in 24hour format) ==> "
+                    )
+                    if len(new_end_time) < 4:
+                        print("The tuition centre is closed at that time.")
+                    elif int(new_end_time) > 2100:
+                        print("The tuition centre is closed at that time.")
+                    elif new_end_time.isdigit() == False:
+                        print("That is not a valid time.")
+                    else:
+            # data[0]  = chosen subject, data[1] = chosen day, data[2] = chosen level
+                        Tutor.edit_schedule(
+                            schedule_manager.get_whole_schedule(),
+                            data[0],
+                            data[1],
+                            data[2],
+                            new_start_time,
+                            new_end_time,
+                        )
+                        print("Schedule changed.")
+                        valid = False
+        elif cursor == "S":
+            data = Tutor.view_student_list(user_data)
+            for i in data:
+                print(f"{i[0]} students:")
+                if i[1] != "None":
+                    for x in i[1]:
+                        print(x)
+                else:
+                    print(i[1])
+                print("---------------------")
+
+        elif cursor == "U":
+            update_menu(user_data, items, username, 2)
+        elif cursor == "E":
+            print("Logging out...")
+            t.sleep(0.5)
+            print("Logout successful.")
+            t.sleep(0.5)
+            session = False
+        else:
+            print("Invalid input.")
+
+
+def student(user_data: list, items: list, subject_list: list):
+    session = True
+    username = user_data[1]
+    print(f"Welcome {user_data[3]}.")
+    t.sleep(1)
+    while session:
+        cursor = input(
+            "To update your profile, type U || To view your schedule, type V || To send a subject change request, type R || To view payment status, type P || To exit, type E ==> "
+        ).upper()
+        if cursor == "U":
+            update_menu(user_data, items, username, 3)
+
+        elif cursor == "V":
+            subject_info = user_data[9]
+            student_level = int(user_data[8])
+            Student.view_schedule(subject_info, student_level)
+
+        elif cursor == "R":
+            user_subject_info = user_data[9]
+            print(f"Your subjects: {user_subject_info}")
+            while True:
+                wanted_subject = input(
+                    "What subject would you like to change ==> "
+                ).upper()
+                if wanted_subject not in user_subject_info:
+                    print("You are not enrolled in that subject.")
+                else:
+                    break
+            print(f"What subject would you like to change to?")
+            for i in subject_list:
+                print(i)
+            while True:
+                subject_change = input("Your choice ==> ").upper()
+                if subject_change in user_subject_info:
+                    print("You have already enrolled in that subject.")
+                else:
+                    break
+            print("Your request has been sent!")
+            Student.subject_change_requests(username, wanted_subject, subject_change)
+        elif cursor == "P":
+            Student.check_payment_status(user_data)
+        elif cursor == "E":
+            print("Logging out...")
+            session = False
+        else:
+            print("Invalid input.")
 
 
 def main(running=True):
@@ -766,82 +938,7 @@ def main(running=True):
 
         # Student code block
         elif login_type == 3:
-            session = True
-            username = user_data[1]
-            print(f"Welcome {user_data[3]}.")
-            t.sleep(1)
-            while session:
-                cursor = input(
-                    "To update your profile, type U || To view your schedule, type V || To send a subject change request, type R || To view payment status, type P || To exit, type E ==> "
-                ).upper()
-                if cursor == "U":
-                    for i in range(len(user_data)):
-                        print(f"|{i+1}| {items[i]}: {user_data[i]}")
-                    t.sleep(1)
-                    wanted_change_index = input(
-                        "What would you like to edit (2-11)? (Type B to go back) ==> "
-                    ).upper()
-                    if wanted_change_index == "B":
-                        continue
-                    elif int(wanted_change_index) == 7:
-                        unit_no = input("Please enter your unit number ==> ")
-                        street = input("Please enter your street address ==> ")
-                        city = input("Please enter your city ==> ")
-                        postcode = input("Please enter your postcode ==> ")
-                        state = input("Please enter your state ==> ")
-                        address = f"{unit_no}, {street} {city} {postcode}, {state}"
-                        wanted_change = address
-                        changer = Student.update_account(
-                            int(wanted_change_index), wanted_change, username
-                        )
-                        print("Account info changed.")
-
-                        session = False
-                    elif int(wanted_change_index) == 9:
-                        print(
-                            "This can only be done in the 'Request subject change' page."
-                        )
-                    else:
-                        wanted_change = input("What would like to change it to? ==> ")
-                        changer = Student.update_account(
-                            int(wanted_change_index), wanted_change, username
-                        )
-                        print("Account info changed.")
-
-                        session = False
-                elif cursor == "V":
-                    subject_info = user_data[9]
-                    student_level = int(user_data[8])
-                    Student.view_schedule(subject_info, student_level)
-
-                elif cursor == "R":
-                    user_subject_info = user_data[9]
-                    print(f"Your subjects: {user_subject_info}")
-                    while True:
-                        wanted_subject = input(
-                            "What subject would you like to change ==> "
-                        ).upper()
-                        if wanted_subject not in user_subject_info:
-                            print("You are not enrolled in that subject.")
-                        else:
-                            break
-                    print(f"What subject would you like to change to?")
-                    for i in subject_list:
-                        print(i)
-                    while True:
-                        subject_change = input("Your choice ==> ").upper()
-                        if subject_change in user_subject_info:
-                            print("You have already enrolled in that subject.")
-                        else:
-                            break
-                    print("Your request has been sent!")
-                    Student.subject_change_requests(
-                        username, wanted_subject, subject_change
-                    )
-                elif cursor == "P":
-                    Student.check_payment_status(user_data)
-                elif cursor == "E":
-                    session = False
+            student(user_data, items, subject_list)
 
         elif login_type == -1:
             print("Exiting system...")

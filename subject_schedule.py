@@ -46,6 +46,10 @@ def give_days():
 def get_subject_prices():
     return subject_prices
 
+def get_whole_schedule():
+    with open("Data files/SubjectSchedules.txt") as f:
+        subject_schedule = json.load(f)
+    return subject_schedule
 
 def edit_schedule(subject_schedule, subject, day, level, start_time, end_time):
     subject_schedule[subject][day][level - 1] = [level, start_time, end_time]
