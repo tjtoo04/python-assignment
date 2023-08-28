@@ -137,16 +137,6 @@ class User:
 
 @dataclass
 class Admin(User):
-    def register():
-        pass
-
-    def student_count(count=0):
-        data = User.line_read()
-        for i in data:
-            if i == "Student":
-                count += 1
-        return count
-
     def register_employee(data: list, role, subjects, prices=None):
         if prices is None:
             prices = 0
@@ -182,6 +172,24 @@ class Admin(User):
                         data_lines.pop(i)
             for i in data_lines:
                 cursor.write(f"{i}\n")
+
+    def monthly_report_generator(price=None):
+        if price is None:
+            price = 0
+        total_price = {}
+        data = Admin.line_read()
+        for i, j in enumerate(data):
+            if j == "Student":
+                user_data = data[i : i + 12]
+                subjects = user_data[9].split(",")
+                subject_prices = schedule_manager.get_subject_prices()
+                for x in subjects:
+                    if x not in total_price:
+                        total_price[x] = subject_prices[x]
+                    else:
+                        total_price[x] += subject_prices[x]
+                    price += subject_prices[x]
+        return total_price, price
 
 
 @dataclass
@@ -548,10 +556,19 @@ def admin(user_data: list, items: list, subject_list: list):
             elif confirmation == "N":
                 print("Going back...")
                 t.sleep(1)
+        elif cursor == "V":
+            report = Admin.monthly_report_generator()
+            print(f"Monthly income: {report[1]}")
+            print("------------------------------")
+            print(f"Income based on subjects: ")
+            for i in report[0]:
+                print(f"{i}: {report[0][i]}")
+
         elif cursor == "E":
             print("Logging out....")
             print("Logout successfull")
             session = False
+
 
 def receptionist(user_data: list, items: list, subject_list: list):
     session = True
