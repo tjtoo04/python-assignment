@@ -210,7 +210,7 @@ class Receptionist(User):
                 student.write(data[i])
             student.write("\nPaid")
         subject_prices = schedule_manager.get_subject_prices()
-        subjects = data[8].split(",")
+        subjects = data[7].split(",")
         for i in subjects:
             prices += subject_prices[i]
         with open("Data files\StudentPayments.txt", "a+") as f:
@@ -475,6 +475,8 @@ def update_menu(items: list, username: str, role: int, editing=True):
             editing = False
         elif wanted_change_index.isalpha() and wanted_change_index != "B":
             print("Invalid input")
+        elif int(wanted_change_index) > 12:
+            print("Invalid input")
         elif user_data[int(wanted_change_index)-1] == "null":
             print("There is nothing to edit here.")
         elif (
@@ -501,8 +503,6 @@ def update_menu(items: list, username: str, role: int, editing=True):
             print("This can be done in the 'Change schedule' page.")
         elif int(wanted_change_index) == 10 and role == 3:
             print("This can be done in the 'Subject change request' page.")
-        elif int(wanted_change_index) > 12:
-            print("Invalid input")
         else:
             wanted_change = input("What would like to change it to? ==> ")
             changer = User.update_account(
@@ -711,7 +711,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
                         else:
                             data.append(new_username)
                             status = False
-                if (
+                elif (
                     i == "Password"
                     or i == "Name"
                     or i == "IC"
@@ -720,14 +720,14 @@ def receptionist(user_data: list, items: list, subject_list: list):
                 ):
                     new_info = input(f"Please enter {i} ==>")
                     data.append(new_info)
-                if i == "Level":
+                elif i == "Level":
                     while True:
                         level = input(f"Please enter your level ==> ")
                         if int(level) < 0 or int(level) > 5:
                             print("Invalid level")
                         else:
                             break
-                if i == "Email":
+                elif i == "Email":
                     status = True
                     while status:
                         new_email = input("Please enter a valid email ==> ")
@@ -736,7 +736,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
                         else:
                             data.append(new_email)
                             status = False
-                if i == "Address":
+                elif i == "Address":
                     unit_no = input("Please enter your unit number ==> ")
                     street = input("Please enter your street address ==> ")
                     city = input("Please enter your city ==> ")
@@ -744,7 +744,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
                     state = input("Please enter your state ==> ")
                     address = f"{unit_no}, {street} {city} {postcode}, {state}"
                     data.append(address)
-                if i == "Subjects":
+                elif i == "Subjects":
                     if int(level) < 4:
                         n = 1
                         print("The subjects available are " + ", ".join(subject_list[:6]))
