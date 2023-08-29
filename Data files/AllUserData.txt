@@ -103,7 +103,8 @@ gwen@gmail.com
 10, jalan helang kajang 102938, johor
 PHYSICS,CHEMISTRY,BIOLOGY
 9
-PaidStudent
+Paid
+Student
 gwwendaline
 qwerty
 gwen

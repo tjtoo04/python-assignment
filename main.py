@@ -205,10 +205,10 @@ class Receptionist(User):
             prices = 0
         with open("Data files\AllUserData.txt", "a+") as student:
             student.write("Student")
-            for i in range(len(data)):
+            for i in data:
                 student.write("\n")
-                student.write(data[i])
-            student.write("\nPaid")
+                student.write(i)
+            student.write("\nPaid\n")
         subject_prices = schedule_manager.get_subject_prices()
         subjects = data[7].split(",")
         for i in subjects:
