@@ -31,7 +31,7 @@ email@email.com
 0111111111
 number, street, City
 null
-MATHS, PHYSICS, ENGLISH
+MATHS,PHYSICS,ENGLISH
 null
 null
 Student
