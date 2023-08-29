@@ -7,9 +7,9 @@ subject_list = [
     "ENGLISH",
     "MATHS",
     "SCIENCE",
+    "HISTORY",
     "PHYSICS",
     "CHEMISTRY",
-    "HISTORY",
     "BIOLOGY",
 ]
 days = [["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]]

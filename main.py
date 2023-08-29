@@ -410,6 +410,7 @@ class Student(User):
 
     def check_payment_status(user_info: list):
         payment_status = user_info[-1]
+        print(payment_status)
         if payment_status == "Paid":
             print("You have already paid!")
         elif payment_status == "Unpaid":
@@ -704,12 +705,18 @@ def receptionist(user_data: list, items: list, subject_list: list):
                     i == "Password"
                     or i == "Name"
                     or i == "IC"
-                    or i == "Level"
                     or i == "Contact number"
                     or i == "Month of enrollment"
                 ):
                     new_info = input(f"Please enter {i} ==>")
                     data.append(new_info)
+                if i == "Level":
+                    while True:
+                        level = input(f"Please enter your level ==> ")
+                        if int(level) < 0 or int(level) > 5:
+                            print("Invalid level")
+                        else:
+                            break
                 if i == "Email":
                     status = True
                     while status:
@@ -728,16 +735,28 @@ def receptionist(user_data: list, items: list, subject_list: list):
                     address = f"{unit_no}, {street} {city} {postcode}, {state}"
                     data.append(address)
                 if i == "Subjects":
-                    n = 1
-                    print("The subjects available are " + ", ".join(subject_list))
-                    while n <= 3:
-                        choice = input(f"Please enter subject {n} ==> ").upper()
-                        if choice not in subject_list:
-                            print("That's not a valid subject")
-                        else:
-                            temp.append(choice)
-                            n += 1
-                    data.append(",".join(temp))
+                    if int(level) < 4:
+                        n = 1
+                        print("The subjects available are " + ", ".join(subject_list[:6]))
+                        while n <= 3:
+                            choice = input(f"Please enter subject {n} ==> ").upper()
+                            if choice not in subject_list:
+                                print("That's not a valid subject")
+                            else:
+                                temp.append(choice)
+                                n += 1
+                        data.append(",".join(temp))
+                    elif int(level) == 4 or int(level) == 5:
+                        n = 1
+                        print("The subjects available are " + ", ".join(subject_list))
+                        while n <= 3:
+                            choice = input(f"Please enter subject {n} ==> ").upper()
+                            if choice not in subject_list:
+                                print("That's not a valid subject")
+                            else:
+                                temp.append(choice)
+                                n += 1
+                        data.append(",".join(temp))
             print(data)
             Receptionist.register(data)
             print("User registered.")
@@ -797,42 +816,49 @@ def tutor(user_data: list, items: list, subject_list: list):
         if cursor == "V":
             Tutor.check_schedules(user_data)
         elif cursor == "C":
-            data = Tutor.check_schedules(user_data)
-            tutor_subjects = data[3]
             valid = True
             while valid:
+                data = Tutor.check_schedules(user_data)
+                tutor_subjects = data[3]
                 if "NULL" in tutor_subjects:
                     print("There is nothing to edit here.")
-                    valid = False
-                new_start_time = input(
-                    "Enter a new start time or retype the old start time if no change is wanted (in 24hour format) ==> "
-                )
-                if len(new_start_time) < 4:
-                    print("The tuition centre is closed at that time.")
-                elif int(new_start_time) > 2100:
-                    print("The tuition centre is closed at that time.")
-                elif new_start_time.isdigit() == False:
-                    print("That is not a valid time.")
-                while valid:
-                    new_end_time = input(
-                        "Enter a new end time or retype the old end time if no change is wanted (in 24hour format) ==> "
+                else:
+                    new_start_time = input(
+                        "Enter a new start time or retype the old start time if no change is wanted (in 24hour format) (Type 0 to clear the time) ==> "
                     )
-                    if len(new_end_time) < 4:
-                        print("The tuition centre is closed at that time.")
-                    elif int(new_end_time) > 2100:
-                        print("The tuition centre is closed at that time.")
-                    elif new_end_time.isdigit() == False:
-                        print("That is not a valid time.")
-                    else:
-            # data[0]  = chosen subject, data[1] = chosen day, data[2] = chosen level
+                    if int(new_start_time) == 0:
                         Tutor.edit_schedule(
-                            schedule_manager.get_whole_schedule(),
-                            data[0],
-                            data[1],
-                            data[2],
-                            new_start_time,
-                            new_end_time,
+                        schedule_manager.get_whole_schedule(),
+                        data[0],
+                        data[1],
+                        data[2],
+                        "Empty",
+                        "Empty",
                         )
+                        print("Schedule changed.")
+                        valid = False
+                    elif int(new_start_time) > 2100 or int(new_start_time) < 1000:
+                        print("The tuition centre is closed at that time.")
+                    elif new_start_time.isdigit() == False:
+                        print("That is not a valid time.")
+                    while valid:
+                        new_end_time = input(
+                            "Enter a new end time or retype the old end time if no change is wanted (in 24hour format) ==> "
+                        )
+                        if int(new_end_time) > 2100:
+                            print("The tuition centre is closed at that time.")
+                        elif new_end_time.isdigit() == False:
+                            print("That is not a valid time.")
+                        else:
+                # data[0]  = chosen subject, data[1] = chosen day, data[2] = chosen level
+                            Tutor.edit_schedule(
+                                schedule_manager.get_whole_schedule(),
+                                data[0],
+                                data[1],
+                                data[2],
+                                new_start_time,
+                                new_end_time,
+                            )
                         print("Schedule changed.")
                         valid = False
         elif cursor == "S":
