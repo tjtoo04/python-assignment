@@ -67,7 +67,7 @@ class User:
             return 3
 
     # user_type = 0 for admin info, user_type = 1 for Receptionist info, user_type= 2 for tutor info, user_type = 3 for student info
-    def retrieve_info(username: list):
+    def retrieve_info(username: str):
         user_info = User.line_read()
         for i, j in enumerate(user_info):
             if j == username:
@@ -91,6 +91,7 @@ class User:
                             cursor.write(data[x])
                             if x < len(data) - 1:
                                 cursor.write("\n")
+                        data = User.line_read()
                     except:
                         data[wanted_change_index - 2] = changed_info
                         cursor.seek(0)
@@ -99,6 +100,7 @@ class User:
                             cursor.write(data[x])
                             if x < len(data) - 1:
                                 cursor.write("\n")
+                        data = User.line_read()
 
     def store_payment(username, balance):
         with open("Data files/StudentPayments.txt", "r+") as f:
@@ -460,7 +462,8 @@ class Student(User):
                 )
 
 
-def update_menu(user_data: list, items: list, username: str, role: int, editing=True):
+def update_menu(items: list, username: str, role: int, editing=True):
+    user_data = User.retrieve_info(username)
     while editing:
         for i in range(len(user_data)):
             print(f"|{i+1}| {items[i]}: {user_data[i]}")
@@ -470,6 +473,7 @@ def update_menu(user_data: list, items: list, username: str, role: int, editing=
         ).upper()
         if wanted_change_index == "B":
             print("Going back....")
+            wanted_change = user_data[1]
             editing = False
         elif user_data[int(wanted_change_index)] == "null":
             print("There is nothing to edit here.")
@@ -503,20 +507,22 @@ def update_menu(user_data: list, items: list, username: str, role: int, editing=
                 int(wanted_change_index), wanted_change, username
             )
             print("Account info changed.")
+
             editing = False
+    return wanted_change
 
 
 def admin(user_data: list, items: list, subject_list: list):
     session = True
-    username = user_data[1]
     print("Welcome Admin")
     t.sleep(1)
+    username = user_data[1]
     while session:
         cursor = input(
             "To update your profile, type U || To register employees, type REG || To remove employees, type D || To view monthly income report, type V || To exit, type E ==> "
         ).upper()
         if cursor == "U":
-            update_menu(user_data, items, username, 0)
+            username = User.retrieve_info(update_menu(items, username, 0))[1]
         elif cursor == "REG":
             registering = input(
                 "Type R to register Receptionist, type T to register Tutor ==> "
@@ -786,7 +792,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
                 print("Going back...")
                 t.sleep(1)
         elif cursor == "U":
-            update_menu(user_data, items, username, 1)
+            username = User.retrieve_info(update_menu(items, username, 1))[1]
         elif cursor == "ENR":
             request_counter = Receptionist.subject_enrollment_changer()
         elif cursor == "REC":
@@ -873,7 +879,7 @@ def tutor(user_data: list, items: list, subject_list: list):
                 print("---------------------")
 
         elif cursor == "U":
-            update_menu(user_data, items, username, 2)
+            username = User.retrieve_info(update_menu(items, username, 2))[1]
         elif cursor == "E":
             print("Logging out...")
             t.sleep(0.5)
@@ -894,8 +900,8 @@ def student(user_data: list, items: list, subject_list: list):
             "To update your profile, type U || To view your schedule, type V || To send a subject change request, type R || To view payment status, type P || To exit, type E ==> "
         ).upper()
         if cursor == "U":
-            update_menu(user_data, items, username, 3)
-
+            username = User.retrieve_info(update_menu(items, username, 3)[1]
+)
         elif cursor == "V":
             subject_info = user_data[9]
             student_level = int(user_data[8])
