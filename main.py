@@ -72,13 +72,13 @@ class User:
         for i, j in enumerate(user_info):
             if j == username:
                 try:
-                    return user_info[i - 1 : i + 10]
+                    return user_info[i - 1 : i + 11]
                 except IndexError:
                     return user_info[i - 1 :]
             if i + 1 >= len(user_info):
                 return -1
 
-    def update_account(wanted_change_index: int, changed_info: str, username: list):
+    def update_account(wanted_change_index: int, changed_info: str, username: str):
         data = User.line_read()
         with open("Data files\AllUserData.txt", "r+") as cursor:
             for i, j in enumerate(data):
@@ -91,7 +91,6 @@ class User:
                             cursor.write(data[x])
                             if x < len(data) - 1:
                                 cursor.write("\n")
-                        data = User.line_read()
                     except:
                         data[wanted_change_index - 2] = changed_info
                         cursor.seek(0)
@@ -100,7 +99,6 @@ class User:
                             cursor.write(data[x])
                             if x < len(data) - 1:
                                 cursor.write("\n")
-                        data = User.line_read()
 
     def store_payment(username, balance):
         with open("Data files/StudentPayments.txt", "r+") as f:
@@ -469,13 +467,15 @@ def update_menu(items: list, username: str, role: int, editing=True):
             print(f"|{i+1}| {items[i]}: {user_data[i]}")
         t.sleep(1)
         wanted_change_index = input(
-            "What would you like to edit (2-12)? (Type B to go back) ==> "
+            "What would you like to edit (2-11)? (Type B to go back) ==> "
         ).upper()
         if wanted_change_index == "B":
             print("Going back....")
             wanted_change = user_data[1]
             editing = False
-        elif user_data[int(wanted_change_index)] == "null":
+        elif wanted_change_index.isalpha() and wanted_change_index != "B":
+            print("Invalid input")
+        elif user_data[int(wanted_change_index)-1] == "null":
             print("There is nothing to edit here.")
         elif (
             int(wanted_change_index) == 1
@@ -501,15 +501,19 @@ def update_menu(items: list, username: str, role: int, editing=True):
             print("This can be done in the 'Change schedule' page.")
         elif int(wanted_change_index) == 10 and role == 3:
             print("This can be done in the 'Subject change request' page.")
+        elif int(wanted_change_index) > 12:
+            print("Invalid input")
         else:
             wanted_change = input("What would like to change it to? ==> ")
-            changer = Student.update_account(
+            changer = User.update_account(
                 int(wanted_change_index), wanted_change, username
             )
             print("Account info changed.")
+            if int(wanted_change_index) == 2:
+                user_data = User.retrieve_info(wanted_change)
 
             editing = False
-    return wanted_change
+    return user_data[1]
 
 
 def admin(user_data: list, items: list, subject_list: list):
