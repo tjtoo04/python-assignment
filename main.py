@@ -807,7 +807,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
         elif cursor == "E":
             print("Logging out...")
             t.sleep(1)
-            print("Logout successfull.")
+            print("Logout successful.")
             t.sleep(0.5)
             session = False
         else:
