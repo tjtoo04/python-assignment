@@ -129,7 +129,7 @@ class User:
             for i, j in enumerate(username):
                 if j == user_data[1] and status == 1:
                     # Changes the old balance of 0 to new subjects price - old subject price
-                    balance[i] = new_price - prices[i]
+                    balance[i] += new_price - prices[i]
                     prices[i] = new_price
                     joiner = [
                         f"{username[x]},{prices[x]},{balance[x]}"
@@ -250,7 +250,9 @@ class Receptionist(User):
             # Gets the subjects of the student
             subjects = [x[1:] for x in data]
             print(f"Total number of pending requests: {len(subjects)}")
+            t.sleep(0.5)
             print(f"Pending requests from: {', '.join(set(names))}")
+            t.sleep(0.5)
             while choosing:
                 user_choice = input(
                     "Enter the user to check on their requests (Type E to exit) ==> "
@@ -306,10 +308,11 @@ class Receptionist(User):
                         )
                         print("Subject changed.")
                         Receptionist.delete_requests(user_choice, subject_list)
+                        User.update_account(12, "Unpaid", wanted_student_data[1])
+                        print("Request deleted.")
                         User.update_payment_info(
                             wanted_student_data, 1
                         )  # 1 for adding new balance
-                        print("Request deleted.")
                         changing_user = []
                 else:
                     print("Invalid user")
@@ -330,6 +333,7 @@ class Receptionist(User):
     def update_payment_status(username: str, user_info: list):
         User.update_account(12, "Paid", username)
         print("Payment received")
+        t.sleep(0.5)
         Receptionist.receipt_generator(user_info)
 
     # Generates payment receipt
@@ -337,7 +341,7 @@ class Receptionist(User):
         subject_price = schedule_manager.get_subject_prices()
         user_subjects = user_info[9].split(",")
         payment = [subject_price[x] for x in user_subjects]
-        print(f"Receipt for {user_info[1]}")
+        print(f"\nReceipt for {user_info[1]}")
         print("-------------------------------------")
         for i in range(3):
             print(f"{list(subject_price.keys())[i]}: {payment[i]}")
@@ -388,6 +392,7 @@ class Tutor(User):
         print(
             f"Subject: {chosen_subject}\nLevel: Form {tutor_subjects[0]}\nStart time: {tutor_subjects[1]}\nEnd time: {tutor_subjects[2]}"
         )
+        t.sleep(0.5)
         return chosen_subject, chosen_day, chosen_level, tutor_subjects
 
     # Edits the schedule
@@ -448,40 +453,47 @@ class Student(User):
             with open("Data files/StudentPayments.txt", "r") as f:
                 data = list(map(str.strip, f.readlines()))
                 username = [x.split(",")[0] for x in data]
-                prices = [int(x.split(",")[1]) for x in data]
                 balance = [int(x.split(",")[2]) for x in data]
                 for i, j in enumerate(username):
                     if j == user_info[1]:
                         if balance[i] != 0:
-                            choice = input(
-                                f"Type P to pay the amount of: RM{balance[i]} or type C to cancel ==> "
-                            ).upper()
-                            if choice == "P":
-                                print("Paying...")
-                                User.update_payment_info(
-                                    user_info[1], 0
-                                )  # 0 for resetting balance value
-                                Receptionist.update_payment_status(
-                                    user_info[1], user_info
-                                )
-                            elif choice == "C":
-                                print("Cancelling...")
-                                t.sleep(0.5)
+                            while True:
+                                choice = input(
+                                    f"Type P to pay the amount of: RM{balance[i]} or type C to cancel ==> "
+                                ).upper()
+                                if choice == "P":
+                                    print("Paying...")
+                                    User.update_payment_info(
+                                        user_info, 0
+                                    )  # 0 for resetting balance value
+                                    Receptionist.update_payment_status(
+                                        user_info[1], user_info
+                                    )
+                                    break
+                                elif choice == "C":
+                                    print("Cancelling...")
+                                    t.sleep(0.5)
+                                    break
+                                else:
+                                    print("Invalid input")
 
                         else:
-                            balance = Student.view_payment_info(user_info)
-                            choice = input(
-                                f"Type P to pay the amount of: RM{balance} or type C to cancel ==> "
-                            ).upper()
-                            if choice == "P":
-                                print("Paying...")
-                                User.store_payment(user_info[1], balance)
-                                Receptionist.update_payment_status(
-                                    user_info[1], user_info
-                                )
-                            elif choice == "C":
-                                print("Cancelling...")
-                                t.sleep(0.5)
+                            while True:
+                                balance = Student.view_payment_info(user_info)
+                                choice = input(
+                                    f"Type P to pay the amount of: RM{balance} or type C to cancel ==> "
+                                ).upper()
+                                if choice == "P":
+                                    print("Paying...")
+                                    User.store_payment(user_info[1], balance)
+                                    Receptionist.update_payment_status(
+                                        user_info[1], user_info
+                                    )
+                                elif choice == "C":
+                                    print("Cancelling...")
+                                    t.sleep(0.5)
+                                else:
+                                    print("Invalid input")
 
     # Views the student's schedule
     def view_schedule(subject_info, student_level, running=True):
@@ -719,7 +731,9 @@ def admin(user_data: list, items: list, subject_list: list):
 
         elif cursor == "E":
             print("Logging out....")
+            t.sleep(0.5)
             print("Logout successfull")
+            t.sleep(0.5)
             session = False
         else:
             print("Invalid input.")
@@ -811,7 +825,6 @@ def receptionist(user_data: list, items: list, subject_list: list):
                                 temp.append(choice)
                                 n += 1
                         data.append(",".join(temp))
-            print(data)
             Receptionist.register(data)
             print("User registered.")
             t.sleep(0.5)
@@ -987,6 +1000,9 @@ def student(user_data: list, items: list, subject_list: list):
             Student.check_payment_status(user_data)
         elif cursor == "E":
             print("Logging out...")
+            t.sleep(0.5)
+            print("Logout successful")
+            t.sleep(0.5)
             session = False
         else:
             print("Invalid input.")

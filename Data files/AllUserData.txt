@@ -43,7 +43,7 @@ tttt
 234451
 27, jalan tempura konichiwa 69420, sad
 4
-CHINESE,MATHS,ENGLISH
+PHYSICS,CHEMISTRY,ENGLISH
 december
 Paid
 Student
