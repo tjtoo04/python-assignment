@@ -552,6 +552,23 @@ def update_menu(items: list, username: str, role: int, editing=True):
             or int(wanted_change_index) == 12
         ):
             print("You cannot change that.")
+        elif int(wanted_change_index) == 2:
+            data_lines = User.line_read()
+            while True:
+                wanted_change = input("Please enter a new username ==> ")
+                for x in data_lines:
+                    if x == wanted_change:
+                        print("Username taken")
+                if len(wanted_change) < 8:
+                    print(
+                        "The username length must be more than 8 characters."
+                    )
+                else:
+                    Student.update_account(
+                        int(wanted_change_index), wanted_change, username
+                    )
+                    print("Account info changed.")
+                    break
         elif int(wanted_change_index) == 8:
             unit_no = input("Please enter your unit number ==> ")
             street = input("Please enter your street address ==> ")
