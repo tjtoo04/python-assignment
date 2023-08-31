@@ -782,6 +782,7 @@ def receptionist(user_data: list, items: list, subject_list: list):
                         if int(level) < 0 or int(level) > 5:
                             print("Invalid level")
                         else:
+                            data.append(level)
                             break
                 elif i == "Email":
                     status = True
