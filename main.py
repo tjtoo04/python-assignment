@@ -454,7 +454,7 @@ class Student(User):
             with open("Data files/StudentPayments.txt", "r") as f:
                 data = list(map(str.strip, f.readlines()))
                 username = [x.split(",")[0] for x in data]
-                prices = [x.split(",")[1] for x in data]
+                prices = [int(x.split(",")[1] for x in data)]
                 balance = [int(x.split(",")[2]) for x in data]
                 for i, j in enumerate(username):
                     if j == user_info[1]:
@@ -482,7 +482,7 @@ class Student(User):
                             else:
                                 print(f"Your fees for next month will be RM{balance[i]*-1} cheaper than this month.")
                                 t.sleep(0.5)
-                                print(f"Old price: {int(prices[i])-int(balance[i])}, New price: {prices[i]}")
+                                print(f"Old price: RM{prices[i]-balance[i]}, New price: RM{prices[i]}")
                                 t.sleep(0.5)
                                 User.update_payment_info(
                                             user_info, 0
