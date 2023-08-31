@@ -446,37 +446,50 @@ class Student(User):
     # Checks payment status and asks for payment
     def check_payment_status(user_info: list):
         payment_status = user_info[-1]
-        print(payment_status)
+        print(f"Your payment status: {payment_status}")
+        t.sleep(0.5)
         if payment_status == "Paid":
             print("You have already paid!")
         elif payment_status == "Unpaid":
             with open("Data files/StudentPayments.txt", "r") as f:
                 data = list(map(str.strip, f.readlines()))
                 username = [x.split(",")[0] for x in data]
+                prices = [x.split(",")[1] for x in data]
                 balance = [int(x.split(",")[2]) for x in data]
                 for i, j in enumerate(username):
                     if j == user_info[1]:
                         if balance[i] != 0:
-                            while True:
-                                choice = input(
-                                    f"Type P to pay the amount of: RM{balance[i]} or type C to cancel ==> "
-                                ).upper()
-                                if choice == "P":
-                                    print("Paying...")
-                                    User.update_payment_info(
-                                        user_info, 0
-                                    )  # 0 for resetting balance value
-                                    Receptionist.update_payment_status(
-                                        user_info[1], user_info
-                                    )
-                                    break
-                                elif choice == "C":
-                                    print("Cancelling...")
-                                    t.sleep(0.5)
-                                    break
-                                else:
-                                    print("Invalid input")
-
+                            if balance[i] > 0:
+                                while True:
+                                    choice = input(
+                                        f"Type P to pay the amount of: RM{balance[i]} or type C to cancel ==> "
+                                    ).upper()
+                                    if choice == "P":
+                                        print("Paying...")
+                                        User.update_payment_info(
+                                            user_info, 0
+                                        )  # 0 for resetting balance value
+                                        Receptionist.update_payment_status(
+                                            user_info[1], user_info
+                                        )
+                                        break
+                                    elif choice == "C":
+                                        print("Cancelling...")
+                                        t.sleep(0.5)
+                                        break
+                                    else:
+                                        print("Invalid input")
+                            else:
+                                print(f"Your fees for next month will be RM{balance[i]*-1} cheaper than this month.")
+                                t.sleep(0.5)
+                                print(f"Old price: {int(prices[i])-int(balance[i])}, New price: {prices[i]}")
+                                t.sleep(0.5)
+                                User.update_payment_info(
+                                            user_info, 0
+                                        )  # 0 for resetting balance value
+                                Receptionist.update_payment_status(
+                                            user_info[1], user_info
+                                        )
                         else:
                             while True:
                                 balance = Student.view_payment_info(user_info)
@@ -489,9 +502,11 @@ class Student(User):
                                     Receptionist.update_payment_status(
                                         user_info[1], user_info
                                     )
+                                    break
                                 elif choice == "C":
                                     print("Cancelling...")
                                     t.sleep(0.5)
+                                    break
                                 else:
                                     print("Invalid input")
 
