@@ -852,7 +852,6 @@ def receptionist(user_data: list, items: list, subject_list: list):
             if confirmation == "Y":
                 wanted_user_data = User.retrieve_info(wanted_user)
                 authentication = User.authenticator(wanted_user_data)
-                print(wanted_user_data, authentication)
                 if authentication == -1:
                     print("User not found.")
                     t.sleep(1)
