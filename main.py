@@ -221,7 +221,7 @@ class Receptionist(User):
                 student.write(i)
             student.write("\nPaid\n")
         subject_prices = schedule_manager.get_subject_prices()
-        subjects = data[7].split(",")
+        subjects = data[8].split(",")
         for i in subjects:
             prices += subject_prices[i]
         with open("Data files\StudentPayments.txt", "a+") as f:
