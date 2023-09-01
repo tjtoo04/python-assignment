@@ -578,10 +578,12 @@ def update_menu(items: list, username: str, role: int, editing=True):
                         "The username length must be more than 8 characters."
                     )
                 else:
-                    Student.update_account(
+                    User.update_account(
                         int(wanted_change_index), wanted_change, username
                     )
                     print("Account info changed.")
+                    user_data = User.retrieve_info(wanted_change)
+                    editing = False
                     break
         elif int(wanted_change_index) == 8:
             unit_no = input("Please enter your unit number ==> ")
@@ -607,8 +609,6 @@ def update_menu(items: list, username: str, role: int, editing=True):
                 int(wanted_change_index), wanted_change, username
             )
             print("Account info changed.")
-            if int(wanted_change_index) == 2:
-                user_data = User.retrieve_info(wanted_change)
 
             editing = False
     return user_data[1]
