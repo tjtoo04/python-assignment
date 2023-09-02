@@ -745,6 +745,8 @@ def admin(user_data: list, items: list, subject_list: list):
                 Admin.register_employee(data, role, subject)
                 print("User registered.")
                 t.sleep(0.5)
+            else:
+                print("Invalid input")
 
         elif cursor == "D":
             wanted_user = input(
@@ -781,6 +783,7 @@ def admin(user_data: list, items: list, subject_list: list):
             print("Logout successfull")
             t.sleep(0.5)
             session = False
+
         else:
             print("Invalid input.")
 

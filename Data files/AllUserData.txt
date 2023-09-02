@@ -81,7 +81,8 @@ asfafa12313
 2
 CHINESE,SCIENCE,HISTORY
 april
-PaidReceptionist
+Paid
+Receptionist
 RECEPTIONIST1
 qweerty
 Shawnny
