@@ -180,13 +180,13 @@ class Admin(User):
             data_lines = User.line_read()
             cursor.seek(0)
             cursor.truncate()
-            #Gets rid of the profile the user wanted to delete 
+            # Gets rid of the profile the user wanted to delete
             data_lines.pop(data_lines.index(user_data[1]) - 1)
             for i, j in enumerate(data_lines):
                 if j == user_data[1]:
                     for x in range(11):
                         data_lines.pop(i)
-            #Rewrites the new data
+            # Rewrites the new data
             for i in data_lines:
                 cursor.write(f"{i}\n")
 
@@ -197,7 +197,7 @@ class Admin(User):
         total_price = {}
         data = Admin.line_read()
         for i, j in enumerate(data):
-            #Gets the total price of each subject as well as the sum of all subject income combined
+            # Gets the total price of each subject as well as the sum of all subject income combined
             if j == "Student":
                 user_data = data[i : i + 12]
                 subjects = user_data[9].split(",")
@@ -390,7 +390,7 @@ class Tutor(User):
                     valid = False
             except ValueError:
                 print("Invalid input")
-        #Gives the schedule of the wanted subject, day and level
+        # Gives the schedule of the wanted subject, day and level
         tutor_subjects = schedule_manager.give_schedule(
             chosen_subject, chosen_day, chosen_level
         )
@@ -458,15 +458,15 @@ class Student(User):
         elif payment_status == "Unpaid":
             with open("Data files/StudentPayments.txt", "r") as f:
                 data = list(map(str.strip, f.readlines()))
-                #Output = [username1, username2, username3]
+                # Output = [username1, username2, username3]
                 username = [x.split(",")[0] for x in data]
-                #Output = [prices1, prices2, prices3]
+                # Output = [prices1, prices2, prices3]
                 prices = [int(x.split(",")[1] for x in data)]
-                #Output = [balance1, balance2, balance 3]
+                # Output = [balance1, balance2, balance 3]
                 balance = [int(x.split(",")[2]) for x in data]
                 for i, j in enumerate(username):
                     if j == user_info[1]:
-                        #This block is for students who had their subjects changed
+                        # This block is for students who had their subjects changed
                         if balance[i] != 0:
                             if balance[i] > 0:
                                 while True:
@@ -475,12 +475,12 @@ class Student(User):
                                     ).upper()
                                     if choice == "P":
                                         print("Paying...")
-                                        #Updates payment info of the student
+                                        # Updates payment info of the student
                                         User.update_payment_info(
                                             user_info, 0
                                         )  # 0 for resetting balance value
 
-                                        #Updates the payment status of the user
+                                        # Updates the payment status of the user
                                         Receptionist.update_payment_status(
                                             user_info[1], user_info
                                         )
@@ -492,17 +492,21 @@ class Student(User):
                                     else:
                                         print("Invalid input")
                             else:
-                                print(f"Your fees for next month will be RM{balance[i]*-1} cheaper than this month.")
+                                print(
+                                    f"Your fees for next month will be RM{balance[i]*-1} cheaper than this month."
+                                )
                                 t.sleep(0.5)
-                                print(f"Old price: RM{prices[i]-balance[i]}, New price: RM{prices[i]}")
+                                print(
+                                    f"Old price: RM{prices[i]-balance[i]}, New price: RM{prices[i]}"
+                                )
                                 t.sleep(0.5)
                                 User.update_payment_info(
-                                            user_info, 0
-                                        )  # 0 for resetting balance value
+                                    user_info, 0
+                                )  # 0 for resetting balance value
                                 Receptionist.update_payment_status(
-                                            user_info[1], user_info
-                                        )
-                        #This else block is for when the student is unpaid but didn't request a subject change
+                                    user_info[1], user_info
+                                )
+                        # This else block is for when the student is unpaid but didn't request a subject change
                         else:
                             while True:
                                 balance = Student.view_payment_info(user_info)
@@ -553,7 +557,7 @@ def update_menu(items: list, username: str, role: int, editing=True):
             print("Going back....")
             wanted_change = user_data[1]
             editing = False
-        #Checks if the input is a letter and it is not B
+        # Checks if the input is a letter and it is not B
         elif wanted_change_index.isalpha() and wanted_change_index != "B":
             print("Invalid input")
         elif int(wanted_change_index) > 12:
@@ -574,9 +578,7 @@ def update_menu(items: list, username: str, role: int, editing=True):
                     if x == wanted_change:
                         print("Username taken")
                 if len(wanted_change) < 8:
-                    print(
-                        "The username length must be more than 8 characters."
-                    )
+                    print("The username length must be more than 8 characters.")
                 else:
                     User.update_account(
                         int(wanted_change_index), wanted_change, username
@@ -642,16 +644,22 @@ def admin(user_data: list, items: list, subject_list: list):
                         n = 1
                         while status:
                             new_username = input("Please enter a new username ==> ")
+                            taken = False
+                            length_correct = False
                             for x in data_lines:
                                 if x == new_username:
                                     print("Username taken")
+                                    taken = True
                             if len(new_username) < 8:
                                 print(
                                     "The username length must be more than 8 characters."
                                 )
-                            else:
+                                length_correct = True
+                            if not taken and not length_correct:
                                 data.append(new_username)
                                 status = False
+                                taken = False
+                                length_correct = False
                     if (
                         i == "Password"
                         or i == "Name"
@@ -705,16 +713,22 @@ def admin(user_data: list, items: list, subject_list: list):
                         n = 1
                         while status:
                             new_username = input("Please enter a new username ==> ")
+                            taken = False
+                            length_correct = False
                             for x in data_lines:
                                 if x == new_username:
                                     print("Username taken")
+                                    taken = True
                             if len(new_username) < 8:
                                 print(
                                     "The username length must be more than 8 characters."
                                 )
-                            else:
+                                length_correct = True
+                            if not taken and not length_correct:
                                 data.append(new_username)
                                 status = False
+                                taken = False
+                                length_correct = False
                     if (
                         i == "Password"
                         or i == "Name"
@@ -808,14 +822,20 @@ def receptionist(user_data: list, items: list, subject_list: list):
                     n = 1
                     while status:
                         new_username = input("Please enter a new username ==> ")
+                        taken = False
+                        length_correct = False
                         for x in data_lines:
                             if x == new_username:
                                 print("Username taken")
+                                taken = True
                         if len(new_username) < 8:
                             print("The username length must be more than 8 characters.")
-                        else:
+                            length_correct = True
+                        if not taken and not length_correct:
                             data.append(new_username)
                             status = False
+                            taken = False
+                            length_correct = False
                 elif (
                     i == "Password"
                     or i == "Name"
@@ -943,7 +963,7 @@ def tutor(user_data: list, items: list, subject_list: list):
                     new_start_time = input(
                         "Enter a new start time or retype the old start time if no change is wanted (in 24hour format) (Type 0 to clear the time) ==> "
                     )
-                    #Empties the time slot of the selected subject, day and level
+                    # Empties the time slot of the selected subject, day and level
                     # data[0]  = chosen subject, data[1] = chosen day, data[2] = chosen level
                     if int(new_start_time) == 0:
                         Tutor.edit_schedule(
@@ -958,7 +978,7 @@ def tutor(user_data: list, items: list, subject_list: list):
                         valid = False
                     elif int(new_start_time) > 2100 or int(new_start_time) < 1000:
                         print("The tuition centre is closed at that time.")
-                    #Checks if the input is a letter or not
+                    # Checks if the input is a letter or not
                     elif new_start_time.isdigit() == False:
                         print("That is not a valid time.")
                     while valid:
@@ -984,10 +1004,10 @@ def tutor(user_data: list, items: list, subject_list: list):
         elif cursor == "S":
             data = Tutor.view_student_list(user_data)
             n = 0
-            #data = [[subject1, [name1, level1]], [subject2, [name2,level2]]...]
+            # data = [[subject1, [name1, level1]], [subject2, [name2,level2]]...]
             for i in data:
                 print(f"{i[0]} students:")
-                #If there are students enrolled in the subject
+                # If there are students enrolled in the subject
                 if i[1] != "None":
                     for x in range(len(i[1])):
                         print(f"Name: {i[1][n]}, Level {i[1][n + 1]}")
@@ -995,7 +1015,7 @@ def tutor(user_data: list, items: list, subject_list: list):
                         if n >= len(i[1]):
                             n = 0
                             break
-                #If there are no students enrolled in the subject
+                # If there are no students enrolled in the subject
                 else:
                     print(f"{i[1]}")
                 print("---------------------")
