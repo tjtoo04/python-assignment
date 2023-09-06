@@ -551,7 +551,7 @@ def update_menu(items: list, username: str, role: int, editing=True):
             print(f"|{i+1}| {items[i]}: {user_data[i]}")
         t.sleep(1)
         wanted_change_index = input(
-            "What would you like to edit (2-11)? (Type B to go back) ==> "
+            "What would you like to edit (2-10)? (Type B to go back) ==> "
         ).upper()
         if wanted_change_index == "B":
             print("Going back....")
@@ -573,18 +573,26 @@ def update_menu(items: list, username: str, role: int, editing=True):
         elif int(wanted_change_index) == 2:
             data_lines = User.line_read()
             while True:
-                wanted_change = input("Please enter a new username ==> ")
+                new_username = input("Please enter a new username ==> ")
+                taken = False
+                length_correct = False
                 for x in data_lines:
-                    if x == wanted_change:
+                    if x == new_username:
                         print("Username taken")
-                if len(wanted_change) < 8:
-                    print("The username length must be more than 8 characters.")
-                else:
+                        taken = True
+                if len(new_username) < 8:
+                    print(
+                        "The username length must be more than 8 characters."
+                    )
+                    length_correct = True
+                if not taken and not length_correct:
                     User.update_account(
                         int(wanted_change_index), wanted_change, username
                     )
                     print("Account info changed.")
                     user_data = User.retrieve_info(wanted_change)
+                    taken = False
+                    length_correct = False
                     editing = False
                     break
         elif int(wanted_change_index) == 8:
