@@ -587,10 +587,10 @@ def update_menu(items: list, username: str, role: int, editing=True):
                     length_correct = True
                 if not taken and not length_correct:
                     User.update_account(
-                        int(wanted_change_index), wanted_change, username
+                        int(wanted_change_index), new_username, username
                     )
                     print("Account info changed.")
-                    user_data = User.retrieve_info(wanted_change)
+                    user_data = User.retrieve_info(new_username)
                     taken = False
                     length_correct = False
                     editing = False
