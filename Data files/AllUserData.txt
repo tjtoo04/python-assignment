@@ -16,7 +16,7 @@ ttt
 Too Tze Jiat
 3298472897
 tjtoo04@gmail.com
-0122222222
+012234414
 11, Random Street, City
 null
 null
@@ -81,7 +81,8 @@ asfafa12313
 2
 CHINESE,SCIENCE,HISTORY
 april
-PaidReceptionist
+Paid
+Receptionist
 RECEPTIONIST1
 qweerty
 Shawnny
